@@ -7,7 +7,7 @@ Final Project
 
 import os
 import sys
-sys.path.append(os.getcwd())
+sys.path[0] = sys.path[0].strip(r"\testing")
 
 from winninghand import *
 from random import shuffle
