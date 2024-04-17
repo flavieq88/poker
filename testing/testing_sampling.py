@@ -9,11 +9,15 @@ import sys
 sys.path[0] = sys.path[0].strip(r"\testing")
 
 from winninghand import *
+from bot import handstrength
 from random import shuffle
 from time import perf_counter
 
 # to test if the sampling idea for hand strength is a repressentative measure of "real" hand strength
 #saves this data into text file "testing_sampling_analysis.txt"
+
+n_iter = 1000
+n_samples = 10
 
 def pocketcombinations(deck):
     """Returns a list of tuples containing all possible pocket hands of deck, order doesnt matter"""
@@ -54,13 +58,13 @@ print("Time = ", end-start, "\n", file=fp)
 
 #random sampling:
 print("Sampling random combinations:", file=fp)
-print("Number of iterations = 100\n",file=fp)
+print(f"Number of iterations = {n_iter}\n",file=fp)
 avg = 0
-for i in range(10): #reapeat 10 times to get an idea
+for i in range(n_samples): #reapeat 10 times to get an idea
     start = perf_counter()
     wins = 0 # wins include ties because don't lose any money
     total = 0
-    for i in range(100): # number of iterations = size of random sample
+    for i in range(n_iter): # number of iterations = size of random sample
         shuffle(deck)
         hand2 = deck[:2]
         result = getwinner(hand1+community, hand2+community)
@@ -74,6 +78,6 @@ for i in range(10): #reapeat 10 times to get an idea
     avg += wins/total
 avg = avg/10
 print("Average sampling probability =", avg, file = fp)
-print("Percent error (over 10 samples) = {:3.2f}%".format(abs(avg-P)/P*100), file = fp)
+print("Percent error (over {} samples) = {:3.2f}%".format(n_samples, abs(avg-P)/P*100), file = fp)
 
 fp.close()

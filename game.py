@@ -19,7 +19,8 @@ class PokerGame(object):
         self.bigblind = bigblind
         self.community = [] #list of community cards
         self.deck = Deck()
-        self.startRound()
+        while self.gameOngoing(): #continue new rounds until someone dies
+            self.startRound()
     
     def givecards(self):
         """Distributes pocket cards for both players"""

@@ -43,32 +43,17 @@ class Deck(object):
     def shuffle(self):
         """Shuffles the deck"""
         shuffle(self.deck)
+    
+    def delete(self, card):
+        """Removes the card from the deck"""
+        self.deck.remove(card)
 
-    def _getcard(self):
+    def getcard(self):
         """Returns one card from the deck"""
         return self.deck.pop()
     
         
-    
-class Player(object):
-    def __init__(self, pocket = [], money = 500): 
-        self.pocket = pocket
-        self.money = money
-        self.totalbet = 0
-        self.roundbet = 0
-        self.alive = True
 
-
-    def check(game):
-        """Returns True if Player check if possible, else returns False"""
-        if game.roundpot == 0:
-            return True
-
-    def raisebet(game, amount):
-        """Player raises bet"""
-
-    def callbet(game, amount):
-        """jkjksf"""
 
 #Testing code
 if __name__ == "__main__":
@@ -82,7 +67,7 @@ if __name__ == "__main__":
     d = Deck()
     assert len(d.deck) == 52
     d.shuffle()
-    c = d._getcard()
+    c = d.getcard()
     c.flip()
     print(c)
     TwoClub = Card(2, "Club")
