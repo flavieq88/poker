@@ -633,3 +633,63 @@ Time = 0.004557700012810528
 
 Average sampling probability = 0.038
 Percent error (over 10 samples) = 17.56%
+
+
+
+hand1 = [7Diamond, 7Club]
+community pile = [8Heart, 5Spade, 14Club, 11Club, 7Heart]
+Finding hand strength of hand1 (probability it wins)
+
+Doing all combinations:
+Number of operations = 990
+True hand strength = 0.9424242424242424
+Time =  0.03288720001000911 
+
+Sampling random combinations 1 times:
+Number of iterations = 1000
+Average sampling probability = 0.947
+Percent error over 1 samples = 0.49%
+
+Sampling random combinations 10 times:
+Number of iterations = 100
+Average sampling probability = 0.9490000000000001
+Percent error over 10 samples = 0.70%
+
+hand1 = [9Heart, 10Heart]
+community pile = [13Club, 9Club, 5Club, 13Spade, 8Spade]
+Finding hand strength of hand1 (probability it wins)
+
+Doing all combinations:
+Number of operations = 990
+True hand strength = 0.798989898989899
+Time =  0.03163059998769313 
+
+Sampling random combinations 1 times:
+Number of iterations = 1000
+Average sampling probability = 0.812
+Percent error over 1 samples = 1.63%
+
+Sampling random combinations 10 times:
+Number of iterations = 100
+Average sampling probability = 0.8099999999999999
+Percent error over 10 samples = 1.38%
+
+hand1 = [14Club, 10Diamond]
+community pile = [8Club, 3Heart, 13Spade, 10Club, 9Club]
+Finding hand strength of hand1 (probability it wins)
+
+Doing all combinations:
+Number of operations = 990
+True hand strength = 0.7252525252525253
+Time =  0.03520460007712245 
+
+Sampling random combinations 1 times:
+Number of iterations = 1000
+Average sampling probability = 0.737
+Percent error over 1 samples = 1.62%
+
+Sampling random combinations 10 times:
+Number of iterations = 100
+Average sampling probability = 0.7459999999999999
+Percent error over 10 samples = 2.86%
+
