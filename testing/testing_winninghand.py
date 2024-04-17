@@ -5,7 +5,6 @@ R. Vincent, instructor
 Final Project
 """
 
-import os
 import sys
 sys.path[0] = sys.path[0].strip(r"\testing")
 
@@ -104,6 +103,7 @@ i = [Card(12, "Heart"), Card(12, "Spade"), Card(2, "Diamond"), Card(13, "Heart")
 j = [Card(4, "Heart"), Card(12, "Spade"), Card(2, "Diamond"), Card(13, "Heart"), 
              Card(14, "Club"), Card(7, "Heart"), Card(5, "Diamond")] # high card
 
+#make sure it gets the category correct
 assert rankHand(a)[0] == 9
 assert rankHand(b)[0] == 8
 assert rankHand(c)[0] == 7
