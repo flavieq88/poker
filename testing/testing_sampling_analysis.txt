@@ -257,5 +257,121 @@ Time = 0.04794660001061857 s
 
 ----------------
 
+## 2 unknowns
 
+hand1 = [13Diamond, 5Diamond]
+community pile = [12Heart, 12Diamond, 11Diamond, 8Spade, 13Heart]
+Finding hand strength of hand1 (probability it wins)
+
+Doing all combinations:
+Number of operations = 990
+True hand strength = 0.8585858585858586
+Time = 0.024848299915902317 s
+
+Sampling random combinations 1 times:
+Number of iterations = 1000
+Average sampling probability = 0.858
+Percent error over 1 samples = 0.07%
+Time = 0.03428859997075051 s
+
+Sampling random combinations 10 times:
+Number of iterations = 100
+Average sampling probability = 0.852
+Percent error over 10 samples = 0.77%
+Time = 0.03156889998354018 s
+
+
+## 3 unknowns 
+
+hand1 = [4Heart, 11Club]
+community pile = [10Heart, 12Club, 8Heart, 10Club]
+Finding hand strength of hand1 (probability it wins)
+
+Doing all combinations:
+Number of operations = 45540
+True hand strength = 0.41563460693895476
+Time = 1.1212093000067398 s
+
+Sampling random combinations 10 times:
+Number of iterations = 1000
+Average sampling probability = 0.4231
+Percent error over 10 samples = 1.80%
+Time = 0.3392976999748498 s
+
+
+------------------------------------------
+
+hand1 = [3Spade, 5Club]
+community pile = [11Club, 12Spade, 14Spade, 2Spade, 3Diamond]
+Finding hand strength of hand1 (probability it wins)
+
+Doing all combinations:
+Number of operations = 990
+True hand strength = 0.5181818181818182
+Time = 0.024108300101943314 s
+
+Sampling random combinations 1 times:
+Number of iterations = 1000
+Average sampling probability = 0.511
+Percent error over 1 samples = 1.39%
+Time = 0.032209299970418215 s
+
+Sampling random combinations 10 times:
+Number of iterations = 100
+Average sampling probability = 0.54
+Percent error over 10 samples = 4.21%
+Time = 0.031317500048317015 s
+
+hand1 = [5Spade, 7Club]
+community pile = [9Heart, 13Heart, 13Spade, 4Diamond]
+Finding hand strength of hand1 (probability it wins)
+
+Doing all combinations:
+Number of operations = 45540
+True hand strength = 0.19683794466403162
+Time = 1.0822498999768868 s
+
+Sampling random combinations 10 times:
+Number of iterations = 1000
+Average sampling probability = 0.2008
+Percent error over 10 samples = 2.01%
+Time = 0.407950000022538 s
+
+----------------------
+
+hand1 = [11Heart, 8Club]
+community pile = [3Spade, 3Club, 10Diamond, 4Diamond, 10Club]
+Finding hand strength of hand1 (probability it wins)
+
+Doing all combinations:
+Number of operations = 990
+True hand strength = 0.29797979797979796
+Time = 0.025626400019973516 s
+
+Sampling random combinations 1 times:
+Number of iterations = 1000
+Average sampling probability = 0.3
+Percent error over 1 samples = 0.68%
+Time = 0.03239519998896867 s
+
+Sampling random combinations 10 times:
+Number of iterations = 100
+Average sampling probability = 0.308
+Percent error over 10 samples = 3.36%
+Time = 0.033116000005975366 s
+
+hand1 = [2Diamond, 14Heart]
+community pile = [3Diamond, 10Diamond, 4Heart, 6Spade]
+Finding hand strength of hand1 (probability it wins)
+
+Doing all combinations:
+Number of operations = 45540
+True hand strength = 0.41490996925779533
+Time = 1.168684000032954 s
+
+Sampling random combinations 10 times:
+Number of iterations = 1000
+Average sampling probability = 0.4042
+Percent error over 10 samples = 2.58%
+Time = 0.3443364000413567 s
 
