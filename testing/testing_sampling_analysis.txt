@@ -229,33 +229,8 @@ Average sampling probability = 0.25
 Percent error over 10 samples = 2.17%
 Time = 0.037429300020448864 s
 
---------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------
 
-
-hand1 = [7Club, 11Spade]
-community pile = [8Heart, 14Spade, 11Diamond, 9Spade, 9Diamond]
-Finding hand strength of hand1 (probability it wins)
-
-Sampling random combinations 1 times:
-Number of iterations = 1000
-Average sampling probability = 0.737
-Time = 0.1074123999569565 s
-
-Sampling random combinations 10 times:
-Number of iterations = 100
-Average sampling probability = 0.719
-Time = 0.09897369996178895 s
-
-hand1 = [8Club, 6Club]
-community pile = [10Heart, 6Spade, 8Spade, 3Diamond]
-Finding hand strength of hand1 (probability it wins)
-
-Sampling random combinations 1 times:
-Number of iterations = 100
-Average sampling probability = 0.69
-Time = 0.04794660001061857 s
-
-----------------
 
 ## 2 unknowns
 

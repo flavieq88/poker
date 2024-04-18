@@ -31,7 +31,8 @@ def pocketcombinations(deck):
 deck = [Card(i,j, True) for j in ["Club", "Diamond", "Heart", "Spade"] 
                      for i in range(2, 15)] #create a standard deck
 
-fp = open("testing/testing_sampling_analysis.txt", "a") #write results into a file
+#fp = open("testing/testing_sampling_analysis.txt", "a") #write results into a file
+fp = None
 
 shuffle(deck)
 community = [deck.pop(), deck.pop(), deck.pop(), deck.pop(), deck.pop()]
@@ -123,4 +124,8 @@ print("Percent error over {} samples = {:3.2f}%".format(n_samples, abs(h-P)/P*10
 print(f"Time = {end-start} s\n", file = fp)
 
 
-fp.close()
+# testing for 4 unknowns
+
+
+
+#fp.close()
