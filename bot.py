@@ -35,7 +35,8 @@ def handstrength(pocketcards, community, n_iter=1000, n_samples=10):
         h += P
     return h/n_samples #average                     
 #testing for handstrength in testing_sampling.py
-#note: i tried using my class Deck instead of a list for the deck, but it was significantly slower 
+#note: i tried using my class Deck instead of a list for the deck in this function, but it was significantly slower 
+# since it is meant to iterate so many times, I decided to just use the faster approach
 
 
 class Bot(Player):
