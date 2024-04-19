@@ -94,6 +94,8 @@ e = [Card(12, "Heart"), Card(11, "Spade"), Card(10, "Heart"), Card(13, "Heart"),
              Card(9, "Heart"), Card(2, "Heart"), Card(5, "Diamond")] # flush
 f = [Card(14, "Spade"), Card(2, "Spade"), Card(3, "Club"), Card(4, "Spade"), 
           Card(5, "Spade"), Card(11, "Club"), Card(3, "Diamond")] #straight A 2 3 4 5
+f2 = [Card(4, "Diamond"), Card(3, "Club"), Card(6, "Club"), Card(7, "Heart"), 
+          Card(5, "Club"), Card(2, "Diamond"), Card(12, "Diamond")] #straight 
 g = [Card(12, "Heart"), Card(12, "Spade"), Card(12, "Diamond"), Card(13, "Heart"), 
              Card(2, "Club"), Card(7, "Heart"), Card(5, "Diamond")] # three of a kind
 h =  [Card(12, "Heart"), Card(12, "Spade"), Card(2, "Diamond"), Card(13, "Heart"), 
@@ -110,6 +112,7 @@ assert rankHand(c)[0] == 7
 assert rankHand(d)[0] == 6
 assert rankHand(e)[0] == 5
 assert rankHand(f)[0] == 4
+assert rankHand(f2)[0]== 4
 assert rankHand(g)[0] == 3
 assert rankHand(h)[0] == 2
 assert rankHand(i)[0] == 1
@@ -148,3 +151,4 @@ while n<100:
     print(getwinner(hand1, hand2))
     n +=1
 # manually chekcing, all looks good
+

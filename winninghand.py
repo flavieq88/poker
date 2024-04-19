@@ -45,7 +45,7 @@ def straight(hand):
             counter = 1 #restart at this card
             startingCard = i
     #if one, straight sequence will be from starting card to index of startingCard + counter -1
-    straightcards = hand[startingCard:startingCard+counter] 
+    straightcards = hand[startingCard:startingCard+counter]
     
     #handle possible case 2: if 2 3 4 5 (must start with a 2) and at least up to a 5
     if straightcards[0].rank == 2 and len(straightcards)>=4 and straightcards[-1].rank - 2 >= 3:
@@ -54,7 +54,7 @@ def straight(hand):
         if straightcards[0].rank == 14: #valid straight
             return straightcards
     #easy case: for sure no straight
-    elif len(straightcards)<5:
+    if len(straightcards)<5:
         return False
     #case 1: valid straight of 5 different ranks min.
     elif len(straightcards)>=5 and straightcards[-1].rank-straightcards[0].rank>=4: 
