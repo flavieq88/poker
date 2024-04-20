@@ -36,21 +36,22 @@ class Card(object):
 
 
 class Deck(object):
-    def __init__(self):
-        self.deck = [Card(i,j, False) for j in ["Club", "Diamond", "Heart", "Spade"] 
+    def __init__(self, faceUp=False):
+        self.deck = [Card(i,j, faceUp) for j in ["Club", "Diamond", "Heart", "Spade"] 
                      for i in range(2, 15)] #standard 52 card deck
     
     def shuffle(self):
         """Shuffles the deck"""
         shuffle(self.deck)
     
-    def delete(self, card):
+    def remove(self, card):
         """Removes the card from the deck"""
         self.deck.remove(card)
 
-    def getcard(self):
-        """Returns one card from the deck"""
+    def pop(self):
+        """Removes and returns one card from the deck"""
         return self.deck.pop()
+    
     
         
 
@@ -67,7 +68,7 @@ if __name__ == "__main__":
     d = Deck()
     assert len(d.deck) == 52
     d.shuffle()
-    c = d.getcard()
+    c = d.pop()
     c.flip()
     print(c)
     TwoClub = Card(2, "Club")
@@ -75,7 +76,7 @@ if __name__ == "__main__":
     assert not TwoClub.equal(AceSpade)
     assert Card(3, "Club").equal(Card(3, "Club"))
     assert not Card(3, "Heart").equal(Card(3, "Club"))
-
+    d.remove(Card(4, "Spade"))
     print("All tests passed")
 
  
