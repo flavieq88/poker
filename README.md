@@ -1,5 +1,4 @@
 # Poker
-This is my final project for the Programming Techniques and Applications course. 
 I decided to make a user interface for playing no limit Heads up Texas Hold'em poker (one player against a computer bot), in Python. 
 
 ## How to play

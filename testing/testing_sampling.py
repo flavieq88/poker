@@ -1,9 +1,4 @@
-"""
-Flavie Qin 2230509
-Programming Techniques and Applications
-R. Vincent, instructor
-Final Project
-"""
+#identification section
 
 import sys
 sys.path[0] = sys.path[0].strip(r"\testing")

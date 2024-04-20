@@ -1,9 +1,4 @@
-"""
-Flavie Qin 2230509
-Programming Techniques and Applications
-R. Vincent, instructor
-Final Project
-"""
+#identification section
 
 import sys
 sys.path[0] = sys.path[0].strip(r"\testing")
@@ -125,4 +120,23 @@ print("Percent error = {:.3f}%\n".format((abs(h-P)/P)*100), file=fp)
 
 #round 4: river (all community cards known)
 print("River", file=fp)
-community.append()
+community.append(d.pop())
+print(f"pocket cards = {pocket}", file=fp)
+print(f"community = {community}\n", file=fp)
+
+#doing all possible combinations:
+start = perf_counter()
+wins = 0 
+total = 0
+
+for hand2 in pocketcombinations(d.deck): #get all possible combinations for opponents pocket cards
+    result = getwinner(pocket+community, list(hand2)+community)
+    if result != "Loss":
+        wins +=1
+    total+=1
+
+P = wins/total
+end = perf_counter()
+print("total number of operations =", total, file=fp)
+print("true hand strength =", P, file=fp)
+print(f"Time = {end-start} s\n", file=fp)

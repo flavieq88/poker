@@ -1,4 +1,6 @@
-    
+#identification section
+
+
 class Player(object):
     def __init__(self, pocket = [], money = 500): 
         self.pocket = pocket #list of cards
