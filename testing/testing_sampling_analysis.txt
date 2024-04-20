@@ -21,7 +21,7 @@ here would be 7 cards unknown (all community cards + opponent pocket cards)
 So I must do an alternative: my idea was to do random sampling of a set amount of iterations (ex: 1000)
 and hope that this random sampling would mean it will representative of the true probability
 
-To test this out (thank you to Prof. Veronique Godin for helping me come up with this idea!):
+To test this out (thank you to Prof. Godin for helping me come up with this idea!):
 I decided to take the most restricted case: all cards on table are know, only opponent pocket cards are unknown
 Then, there would be a total of 52 - 7 = 45 possible cards
 Number of permutations = 45*44 = 1980

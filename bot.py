@@ -28,10 +28,12 @@ def handstrength(pocketcards, community, n_iter=1000, n_samples=10):
                 wins += 1
         P = wins/n_iter
         h += P
-    return h/n_samples #average                     
-#testing for handstrength in testing_sampling.py
+    return h/n_samples #average     
+                
+#testing for handstrength and the concept of sampling can be found in testing_handstrength.py
+
 #note: i tried using my class Deck instead of a list for the deck in this function, but it was significantly slower 
-# since it is meant to iterate so many times, I decided to just use the faster approach
+#and since it is meant to iterate so many times, I decided to just use the faster approach
 
 
 class Bot(Player):

@@ -1,0 +1,264 @@
+#identification section
+
+## My analysis (see data below)
+
+The idea behind my bot is that it evaluates the hand strength of its current hand (pocket cards + current community pile)
+to decide what action it should do.
+Meaning that the bot calculates hand strength on the fly = want it to be very fast
+Hand strength is a measure of how good the cards are (=probability that they win)
+However, finding the true hand strength entails going through every possible combination for the unknown cards
+
+Let's calculate how many combinations are needed:
+we can go from most restricted (least combinations) to most restricted (most combinations)
+
+case 1: after the river = only opponent cards unknown
+which means 7 known cards cannot be in the deck anymore
+52 - 7 = 45 possible cards
+Number of total combinations = 45*44 = 1980
+but because order doesnt matter, half will be repeats so we get:
+total combinations = 1980/2 = 990
+(we see that approxamately 1000 iterations takes about 0.03 seconds)
+
+case 2: after the turn = the river is unknown
+there are 6 known cards that cannot be in the deck
+52 - 6 = 46 possible cards
+To find total number of combinations, there are 46 possible cards for the river
+then 45 cards left that we do total combinations as above
+so 45*44 /2 = 990 combinations for the opponent cards
+and total = 46*990 = 45540 combinations
+We see that generally this takes 1.2ish seconds
+
+case 3: after the flop = turn and river unknown
+there are 5 known cards that cant be in the deck
+52 - 5 = 47
+First, we can find all the possible pairs (where order doesnt matter) for turn and river:
+47*46 /2 = 1081 combinations
+and for each of those combinations, then try all possible combinations for opponent cards with the leftover cards
+45*44 / 2 = 990 combinations
+So total = 1081*990 = 1070190 combinations
+This starts to be a lengthy process (about 30 secsonds)
+
+case 4: preflop = no known community cards
+(this time i actally looked up the formula for a certain number of combinations)
+the deck will be of 52 - 2 known = 50 possible cards
+To begin, find all possible combinations for the community cards (5 cards) where order doesnt matter
+This is "50 choose 5" = 50!/(5!(50-5)!) = 2118760 combinations
+Then, again for each of those combinations we try the 990 combinations for the opponent's cards
+Total number of combinations to try = 2118760*990 = 2 097 572 400 
+since 1000 iterations is about 0.03 seconds, this would be at about 62 927 seconds = 17 hours
+(So i wont code a thing to calculate true strength for this case)
+
+But we see that this is a lengthy process for the less restrictive cases
+so i need to find a faster alternative since the bot is supposed to calculate hand strength on the fly
+
+
+The solution I initially thought of was to do a certain amount of random sampling:
+using the deck of possible cards, just fill in the unknown cards randomly and do that many times
+and it should give an estimation for hand strength
+
+To test if this idea is viable (I wanted to make sure it was accurate enough, and that the "random" wouldnt have any bias)
+I can compare to true handstrength!
+
+I picked 10 samples of 1000 iterations (10 000 total iterations) 
+just because smaller samples may have larger variance, but averaging it out will cancel
+(although i did test accuracy for 10 samples of 100 vs 1 sample of 1000 and they were basically the same so doesnt matter too much)
+and that runs in about 0.3 seconds which is fast enough for the bot
+
+When comparing the true hand strength and the estimated hand strength (using sampling method)
+the percent error is generally very small (generally always < 5%, many times even smaller)
+and it seemed to work well even if the number of iterations in sampling << number of iterations needed for true hand strength
+(especially in the flop round)
+which makes me think that it is a good enough measure in the preflop round too (where i didnt compare to a true handstrength)
+
+In conclusion, i find the method of random sampling to be a good enough estimation of hand strength
+(for my purposes at least, where i dont really need a perfect esetimation)
+
+----------------------------------------------------------
+
+## testing results below:
+
+Preflop:
+pocket cards = [12Club, 13Club]
+community = []
+estimated hand strength = 0.6384000000000001
+time = 0.35410959998262115s
+
+
+Flop:
+pocket cards = [12Club, 13Club]
+community = [3Spade, 8Diamond, 14Heart]
+
+total number of operations = 1070190
+true hand strength = 0.5313934908754521
+time = 27.67382379999617s
+
+estimated hand strength = 0.5319
+time = 0.33782859999337234s
+Percent error = 0.095%
+
+
+Turn:
+pocket cards = [12Club, 13Club]
+community = [3Spade, 8Diamond, 14Heart, 4Spade]
+
+total number of operations = 45540
+true hand strength = 0.4398989898989899
+time = 1.1822301000065636 s
+
+estimated hand strength = 0.4378
+time = 0.3538964999897871s
+Percent error = 0.477%
+
+
+River:
+pocket cards = [12Club, 13Club]
+community = [3Spade, 8Diamond, 14Heart, 4Spade, 2Heart]
+
+total number of operations = 990
+true hand strength = 0.2919191919191919
+time = 0.026924200006760657 s
+
+estimated hand strength = 0.2943
+time = 0.3507767000119202s
+Percent error = 0.816%
+
+--------------------------------------------------------------
+
+Preflop:
+pocket cards = [12Heart, 12Club]
+community = []
+estimated hand strength = 0.8011000000000001
+time = 0.3383547000121325s
+
+
+Flop:
+pocket cards = [12Heart, 12Club]
+community = [8Club, 8Diamond, 13Club]
+
+total number of operations = 1070190
+true hand strength = 0.7705332697932142
+time = 27.061283800023375s
+
+estimated hand strength = 0.7750000000000001
+time = 0.35603170000831597s
+Percent error = 0.580%
+
+
+Turn:
+pocket cards = [12Heart, 12Club]
+community = [8Club, 8Diamond, 13Club, 2Spade]
+
+total number of operations = 45540
+true hand strength = 0.7679183135704875
+time = 1.236784800013993 s
+
+estimated hand strength = 0.7652
+time = 0.35812849999638274s
+Percent error = 0.354%
+
+
+River:
+pocket cards = [12Heart, 12Club]
+community = [8Club, 8Diamond, 13Club, 2Spade, 4Spade]
+
+total number of operations = 990
+true hand strength = 0.7757575757575758
+time = 0.02378289998159744 s
+
+estimated hand strength = 0.7853999999999999
+time = 0.3647931999876164s
+Percent error = 1.243%
+
+--------------------------------------------------------------
+
+Preflop:
+pocket cards = [8Club, 9Spade]
+community = []
+estimated hand strength = 0.5005
+time = 0.3385165999934543s
+
+
+Flop:
+pocket cards = [8Club, 9Spade]
+community = [11Heart, 10Diamond, 7Diamond]
+
+total number of operations = 1070190
+true hand strength = 0.9164241863594315
+time = 27.06503279999015s
+
+estimated hand strength = 0.8996000000000001
+time = 0.3590943999879528s
+Percent error = 1.836%
+
+
+Turn:
+pocket cards = [8Club, 9Spade]
+community = [11Heart, 10Diamond, 7Diamond, 2Spade]
+
+total number of operations = 45540
+true hand strength = 0.971453667105841
+time = 1.187305400002515 s
+
+estimated hand strength = 0.9659000000000001
+time = 0.33950599998934194s
+Percent error = 0.572%
+
+
+River:
+pocket cards = [8Club, 9Spade]
+community = [11Heart, 10Diamond, 7Diamond, 2Spade, 4Club]
+
+total number of operations = 990
+true hand strength = 1.0
+time = 0.022622899996349588 s
+
+estimated hand strength = 1.0
+time = 0.3080336000130046s
+Percent error = 0.000%
+
+-----------------------------------------------------------
+
+Preflop:
+pocket cards = [14Heart, 12Diamond]
+community = []
+estimated hand strength = 0.6553
+time = 0.3281204999948386s
+
+
+Flop:
+pocket cards = [14Heart, 12Diamond]
+community = [5Diamond, 2Diamond, 7Diamond]
+
+total number of operations = 1070190
+true hand strength = 0.6520533736999972
+time = 26.83464990000357s
+
+estimated hand strength = 0.6632
+time = 0.3668535999895539s
+Percent error = 1.709%
+
+
+Turn:
+pocket cards = [14Heart, 12Diamond]
+community = [5Diamond, 2Diamond, 7Diamond, 10Diamond]
+
+total number of operations = 45540
+true hand strength = 0.9070487483530961
+time = 1.241660999978194 s
+
+estimated hand strength = 0.8912000000000001
+time = 0.3686425000196323s
+Percent error = 1.747%
+
+
+River:
+pocket cards = [14Heart, 12Diamond]
+community = [5Diamond, 2Diamond, 7Diamond, 10Diamond, 3Diamond]
+
+total number of operations = 990
+true hand strength = 0.9050505050505051
+time = 0.02728960002423264 s
+
+estimated hand strength = 0.8957
+time = 0.36851800000295043s
+Percent error = 1.033%

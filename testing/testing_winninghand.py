@@ -146,5 +146,3 @@ while n<100:
     print(getwinner(hand1, hand2))
     n +=1
 # manually chekcing, all looks good
-
-
