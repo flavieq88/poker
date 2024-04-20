@@ -10,6 +10,7 @@ However, finding the true hand strength entails going through every possible com
 
 Let's calculate how many combinations are needed:
 we can go from most restricted (least combinations) to most restricted (most combinations)
+Thank you to Prof. Godin who helped me with this idea of testing against a true probability going from most to least restrictive
 
 case 1: after the river = only opponent cards unknown
 which means 7 known cards cannot be in the deck anymore
@@ -36,17 +37,17 @@ First, we can find all the possible pairs (where order doesnt matter) for turn a
 and for each of those combinations, then try all possible combinations for opponent cards with the leftover cards
 45*44 / 2 = 990 combinations
 So total = 1081*990 = 1070190 combinations
-This starts to be a lengthy process (about 30 secsonds)
+This starts to be a lengthy process (about 30 seconds)
 
 case 4: preflop = no known community cards
-(this time i actally looked up the formula for a certain number of combinations)
+(this time i actally looked up the formula for a certain number of combinations since ive never done combinatorics)
 the deck will be of 52 - 2 known = 50 possible cards
 To begin, find all possible combinations for the community cards (5 cards) where order doesnt matter
 This is "50 choose 5" = 50!/(5!(50-5)!) = 2118760 combinations
 Then, again for each of those combinations we try the 990 combinations for the opponent's cards
 Total number of combinations to try = 2118760*990 = 2 097 572 400 
-since 1000 iterations is about 0.03 seconds, this would be at about 62 927 seconds = 17 hours
-(So i wont code a thing to calculate true strength for this case)
+since 1000 iterations is about 0.03 seconds, this would take about 62 927 seconds = 17 hours
+(So i wont code a thing to calculate true hand strength for this case because it would take too long to run)
 
 But we see that this is a lengthy process for the less restrictive cases
 so i need to find a faster alternative since the bot is supposed to calculate hand strength on the fly
