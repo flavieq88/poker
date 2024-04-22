@@ -27,7 +27,7 @@ To find total number of combinations, there are 46 possible cards for the river
 then 45 cards left that we do total combinations as above
 so 45*44 /2 = 990 combinations for the opponent cards
 and total = 46*990 = 45540 combinations
-We see that generally this takes 1.2ish seconds
+We see that generally this takes 1.2-1.3 seconds
 
 case 3: after the flop = turn and river unknown
 there are 5 known cards that cant be in the deck
@@ -38,6 +38,7 @@ and for each of those combinations, then try all possible combinations for oppon
 45*44 / 2 = 990 combinations
 So total = 1081*990 = 1070190 combinations
 This starts to be a lengthy process (about 30 seconds)
+(also, i can see that this process basically scales linearly to the number of iterations done)
 
 case 4: preflop = no known community cards
 (this time i actally looked up the formula for a certain number of combinations since ive never done combinatorics)
@@ -47,7 +48,7 @@ This is "50 choose 5" = 50!/(5!(50-5)!) = 2118760 combinations
 Then, again for each of those combinations we try the 990 combinations for the opponent's cards
 Total number of combinations to try = 2118760*990 = 2 097 572 400 
 since 1000 iterations is about 0.03 seconds, this would take about 62 927 seconds = 17 hours
-(So i wont code a thing to calculate true hand strength for this case because it would take too long to run)
+(So i wont even code a thing to calculate true hand strength for this case because it would take too long to run)
 
 But we see that this is a lengthy process for the less restrictive cases
 so i need to find a faster alternative since the bot is supposed to calculate hand strength on the fly
