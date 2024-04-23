@@ -28,8 +28,8 @@ def pocketcombinations(deck):
 d = Deck(True) #create a standard deck, cards faceUp so that we can see them when printing
 d.shuffle()
 
-fp = open("testing/testing_handstrength_analysis.txt", "a") #write results into a file
-#fp = None 
+#fp = open("testing/testing_handstrength_analysis.txt", "a") #write results into a file
+fp = None 
 #use fp = open(...) if I want to write to file
 
 ## round 1: preflop (no known cards except for pocket cards)
@@ -151,4 +151,4 @@ print(f"estimated hand strength = {h}", file=fp)
 print(f"time = {end-start}s", file=fp)
 print("Percent error = {:.3f}%".format((abs(h-P)/P)*100), file=fp)
 
-fp.close()
+#fp.close()

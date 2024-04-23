@@ -1,5 +1,6 @@
 # Poker
-I decided to make a user interface for playing no limit Heads up Texas Hold'em poker (one player against a computer bot), in Python. 
+I decided to make a program so that you can play no limit Heads up Texas Hold'em poker (one player against a computer bot), in Python. 
+This includes a Graphical User Interface to actually play, built with tkinter. 
 
 ## How to play
 
@@ -8,8 +9,7 @@ I decided to make a user interface for playing no limit Heads up Texas Hold'em p
 ### Guide to using
 
 ## Documentation
-For now only used standard libraries.
-If i have time to do frontend, i will use Qt
+For now only used standard libraries (tkinter, random, etc.)
 
 
 ## Computer bot

@@ -30,16 +30,16 @@ def handstrength(pocketcards, community, n_iter=1000, n_samples=10):
         h += P
     return h/n_samples #average                     
 #testing and analysis for handstrength and the concept of sampling can be found in testing_handstrength.py and testing_handstrength_analysis.txt
-
 #note: i tried using my class Deck instead of a list for the deck in this function, but it was significantly slower 
 #and since it is meant to iterate so many times, I decided to just use the faster approach
 
 
-class Bot(Player):
+class Bot(Player): #inherit from Player
 
-    def __init__(self, difficulty, pocket = [], money = 500):
+    def __init__(self, difficulty=0, pocket = [], money = 500):
         super().__init__(pocket, money)
-        self.difficulty = difficulty #0, 1 or 2
+        self.difficulty = difficulty #0, 1 or 2 going from easy to hard
 
-
-    
+    def doAction(self, game): #game is a PokerGame object (the current one)
+        """evalutate hand strength and pot odds and decides to do something"""
+        h = handstrength(self.pocket, game.community, )
