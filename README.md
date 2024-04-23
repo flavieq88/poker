@@ -10,6 +10,7 @@ This includes a Graphical User Interface to actually play, built with tkinter.
 
 ## Documentation
 For now only used standard libraries (tkinter, random, etc.)
+However, need the 
 
 
 ## Computer bot

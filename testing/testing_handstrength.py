@@ -50,7 +50,7 @@ print(f"time = {end-start}s\n", file=fp)
 # I will compare with doing the "true" hand strength (computed by trying all the different possibilities)
 # to see if my estimated hand strength is representative
 print("\nFlop:", file=fp)
-community += [d.pop(), d.pop(), d.pop()]
+community = [d.pop(), d.pop(), d.pop()]
 print(f"pocket cards = {pocket}", file=fp)
 print(f"community = {community}\n", file=fp)
 

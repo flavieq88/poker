@@ -2,7 +2,7 @@
 
 
 class Player(object):
-    def __init__(self, pocket = [], money = 500): 
+    def __init__(self, pocket = [None, None], money = 500): 
         self.pocket = pocket #list of cards
         self.money = money #int
         self.lastbet = 0

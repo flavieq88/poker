@@ -143,7 +143,7 @@ def highcard(hand):
 
 #function for finding how good a certain 7-card hand is
 def rankHand(hand):
-    """Returns a list with first element being the rank from 0(worst)-9(best) of the hand and the 5-card hand"""
+    """Returns a list with first element being the rank from 0(worst)-9(best) of the hand and the final 5-card hand"""
     counts = count_ranks(hand)
     ls = [flush(hand), straight(hand), four_kind(counts), three_kind(counts), two_pairs(counts), pair(counts)]
     if ls[0] and ls[1]:
