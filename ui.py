@@ -10,7 +10,7 @@ class PokerGame(tk.Tk): # base class is Tk
     #define stuff about the basic interface
     HEIGHT = 640 #how big the window will be
     WIDTH = 1000
-    BACKGROUND = "#194f18" #make background dark green like real poker tables
+    BACKGROUND = "#0b3b14" #make background dark green like real poker tables
     #for plaing all buttons and images, i define the table to be 3 rows and 7 columns
 
     #seperate the table into a grid pattern (just so its easier for me to place the stuff)
@@ -22,19 +22,21 @@ class PokerGame(tk.Tk): # base class is Tk
     GAMEOVER = 2 # game is over
     WAITING = 3 # any other time (distributing cards or computer playing)
 
-    def __init__(self, username = "", SB = 5):
+    def __init__(self, username = "", difficulty="HARD", SB = 5):
         """Initializes the application"""
         super().__init__(None) # initialize the base class
 
         #first: an opening menu to ask for username and bot difficulty
         #self.username, difficulty= self.menu()
         self.username = username
+        self.difficulty = difficulty
 
         #other attributes for the game:
-        self.players = [Player(), Bot()]
+        self.players = [Player(), Bot(self.difficulty)]
         self.pot = 0
         self.smallblind = SB
         self.community = [None for _ in range(5)] #list of 5 None
+        self.deck = Deck()
 
         # Create the window
         self.geometry(f"{self.WIDTH}x{self.HEIGHT}")
@@ -64,14 +66,14 @@ class PokerGame(tk.Tk): # base class is Tk
         #makes labels labels and players names
         self.potlabel = tk.Label(self, text = "CURRENT POT AMOUNT:") #label the pot
         self.humanlabel = tk.Label(self, text=self.username)
-        self.computerlabel = tk.Label(self, text="PLAYER2: LEVEL HARD")
+        self.computerlabel = tk.Label(self, text=f"PLAYER2: LEVEL {self.difficulty}")
         #now display the labels
         self.potlabel.grid(row=2, column=1, sticky="n")
-        self.humanlabel.grid(row = 4, column = 8, sticky="e")
+        self.humanlabel.grid(row = 4, column = 5, columnspan = 5, sticky="e", padx=15)
         self.computerlabel.grid(row = 0, column = 8, sticky="e")
         
 
-        self.title("Play Poker! Gambling is fun :)")
+        self.title("POKER TIME")
         self.update_cards()
         self.update_pots()
 
@@ -119,33 +121,48 @@ class Menu(tk.Tk):
     def __init__(self):
         super().__init__(None) # initialize the base class
         self.value = "" # a place to store the response
+        self.difficulty = "" # a place to store the difficulty level
         
         # draw the window
         self.canvas = tk.Canvas(self,
                                      width = 200,
-                                     height = 100)
+                                     height = 40)
         self.canvas.pack()
         self.title = "Menu" #create window
-        self.label = tk.Label(self, text="Enter your username:\nPress enter to submit")
-        self.label.pack(expand=True)
-        self.box = tk.Entry(self)
-        self.box.pack(expand=True)
+        self.label0 = tk.Label(self, text="Choose your difficulty level")
+        self.label0.pack()
+        self.clicked = tk.StringVar() #set the dropdown menu options to be str
+        options = ["EASY", "MEDIUM", "HARD"]
+        self.clicked.set("HARD")
+        self.menu = tk.OptionMenu(self, self.clicked, *options)
+        self.menu.pack()
+        self.label = tk.Label(self, text="Enter your username:\n(press enter to submit)")
+        self.label.pack() #display label
+        self.box = tk.Entry(self, validate="key", validatecommand=(self.register(self.validate_entry), "%P")) 
+        # all the extra arguments for making the limit of text character to what i set
+        self.box.pack(pady=20) #display the entry field
         
-        self.bind("<Return>", lambda event=None: self.get_name()) #key bind return
+        self.bind("<Return>", lambda event=None: self.get_name()) #key bind return to function
 
     def get_name(self):
+        self.difficulty = self.clicked.get()
         self.value = self.box.get().upper()
         self.destroy() #close the window
 
-    def return_username(self):
+    def validate_entry(self, text):
+        """Makes sure that the user inputs a string of less than 20 characters"""
+        return len(text)<=25
+
+    def return_stuff(self):
+        """Returns a tuple of the username and difficulty level"""
         if self.value: #not empty
-            return self.value
-        else:
-            return "PLAYER1"
+            return self.value, self.difficulty
+        else: #if nothing submitted
+            return "PLAYER1", self.difficulty
 
 if __name__ == '__main__':
     menu = Menu()
     menu.mainloop()
-    username = menu.return_username()
-    app = PokerGame(username)
+    username, difficulty = menu.return_stuff()
+    app = PokerGame(username, difficulty)
     app.mainloop()
