@@ -150,7 +150,7 @@ def rankHand(hand):
         #list of elements in both fl and st and of same suit
         sf = []
         for i in ls[1]: #element in straight = keep the ordering
-            if i in ls[0] and i.suit == ls[0][0].suit:
+            if i in ls[0] and i.equal(ls[0][0]):
                 sf.append(i)
     if ls[0] and ls[1] and len(sf)>=5: #straight+flush  
         if sf[-1].rank == 14: #largest is an Ace = royal flush!!!!

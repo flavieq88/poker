@@ -46,7 +46,7 @@ def handstrength(pocketcards, community, n_iter=1000, n_samples=10):
 
 class Bot(Player): #inherit from Player
 
-    def __init__(self, difficulty=0, pocket = [], money = 500):
+    def __init__(self, difficulty=0, pocket = [None, None], money = 500):
         super().__init__(pocket, money)
         self.difficulty = difficulty #0, 1 or 2 going from easy to hard
 

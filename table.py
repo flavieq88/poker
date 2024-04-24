@@ -14,7 +14,9 @@ class Card(object):
     def flip(self):
         """Flips a card"""
         self.faceUp = not self.faceUp #reverse boolean
+
     def __repr__(self):
+        """Returns a string representing the card. Will be very useful for displaying the images in GUI!"""
         if self.faceUp:
             return str(self.rank)+self.suit
         return "card"
