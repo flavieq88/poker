@@ -119,6 +119,7 @@ class PokerGame(tk.Tk): # base class is Tk
 
 
 class Menu(tk.Tk):   
+    """A class to display the inital menu"""
     def __init__(self):
         super().__init__(None) # initialize the base class
         self.value = "" # a place to store the response
@@ -127,7 +128,7 @@ class Menu(tk.Tk):
         # draw the window
         self.canvas = tk.Canvas(self,
                                      width = 200,
-                                     height = 40)
+                                     height = 30)
         self.canvas.pack()
         self.title = "Menu" #create window
         self.label0 = tk.Label(self, text="Choose your difficulty level")
