@@ -38,6 +38,14 @@ class PokerGame(tk.Tk): # base class is Tk
         self.community = [None for _ in range(5)] #list of 5 None
         self.deck = Deck()
 
+        self.draw_initial() # draw the table and labels and stuff
+
+        self.title("POKER TIME")
+        self.update_cards()
+        self.update_pots()
+
+    def draw_initial(self):
+        """Initializes the table and draws all the stuff and plots them"""
         # Create the window
         self.geometry(f"{self.WIDTH}x{self.HEIGHT}")
         self.configure(background=self.BACKGROUND)
@@ -47,7 +55,6 @@ class PokerGame(tk.Tk): # base class is Tk
             self.grid_columnconfigure(i, weight=1)
         for i in range(self.ROWS):
             self.grid_rowconfigure(i, weight=1)
-        
 
         # create and draw all the buttons
         self.foldbutton = tk.Button(self, text="FOLD") #the fold button
@@ -57,11 +64,11 @@ class PokerGame(tk.Tk): # base class is Tk
         self.raisebutton = tk.Button(self, text = "RAISE") # label for the raise slider
         
         #now draw out the buttons
-        self.foldbutton.grid(row=4, column=4, sticky="S") # draw it out. uses grid instead o fpack or place so that it doesnt look funky in full screen
-        self.checkbutton.grid(row=4, column=3, sticky="S")
-        self.callbutton.grid(row=4, column=2, sticky="S")
-        self.raiseslider.grid(row=4, column=1, sticky="S")
-        self.raisebutton.grid(row=5, column=1, sticky="N", pady = 10) #position the label close enough
+        self.foldbutton.grid(row=4, column=4) # draw it out. uses grid instead o fpack or place so that it doesnt look funky in full screen
+        self.checkbutton.grid(row=4, column=3)
+        self.callbutton.grid(row=4, column=2)
+        self.raiseslider.grid(row=4, column=1)
+        self.raisebutton.grid(row=5, column=1) #position the label close enough
         
         #makes labels labels and players names
         self.potlabel = tk.Label(self, text = "CURRENT POT AMOUNT:") #label the pot
@@ -69,16 +76,10 @@ class PokerGame(tk.Tk): # base class is Tk
         self.computerlabel = tk.Label(self, text=f"PLAYER2: LEVEL {self.difficulty}")
         #now display the labels
         self.potlabel.grid(row=2, column=1, sticky="n")
-        self.humanlabel.grid(row = 4, column = 5, columnspan = 5, sticky="e", padx=15)
+        self.humanlabel.grid(row = 4, column = 5, columnspan = 4, sticky="e")
         self.computerlabel.grid(row = 0, column = 8, sticky="e")
-        
-
-        self.title("POKER TIME")
-        self.update_cards()
-        self.update_pots()
 
 
-    
     def update_cards(self):
         """Displays all the updated the cards on the GUI
         Cards will be: either the actual card if face up
