@@ -20,57 +20,51 @@ class PokerGame(tk.Tk): # base class is Tk
     #define some game states
     INPLAY = 1 # human player's turn
     GAMEOVER = 2 # game is over
-    WAITING = 3 # any other time (distributing cards or computer playing)
+    BOTPLAY = 3 # any other time (computer playing)
+    WAITING = 4 # players are waiting (both players agreed, no more betting)
+    ENDROUND = 5 # at the end determine winner and give pot to winner and reinitialize stuff
+
 
     def __init__(self, username = "", difficulty="HARD", SB = 5):
         """Initializes the application"""
         super().__init__(None) # initialize the base class
 
-        #first: an opening menu to ask for username and bot difficulty
-        #self.username, difficulty= self.menu()
         self.username = username
 
         #other attributes for the game itself:
         self.players = [Player(), Bot(difficulty)]
-        self.pot = 0
         self.smallblind = SB
-        self.community = [None for _ in range(5)] #list of 5 None to begin with
-        self.deck = Deck()
 
-        self.cards = [None for _ in range(len(self.community) + 2*len(self.players))] # 9 total cards
-        # i will use this to store the images for the cards when displaying them
+        self.new_round() # start a new round
 
         self.draw_initial() # draw the table and labels and stuff
-
         self.title("POKER TIME")
+        
+        #initialize game stuff
+        self.state = self.WAITING
+        
+        self.update_buttons()
         self.update_cards()
         self.update_pots()
 
+        if self.state == self.GAMEOVER: #one of the players lost
+            self.game_over() #call function to display winner and kill game
+        elif self.state == self.WAITING:
+            self.give_cards()
+
+
     def draw_initial(self):
-        """Initializes the table and draws all the stuff and plots them"""
+        """Initializes the table and draws all the basic stuff"""
         # Create the window
-        self.geometry(f"{self.WIDTH}x{self.HEIGHT}")
-        self.configure(background=self.BACKGROUND)
+        self.geometry(f"{self.WIDTH}x{self.HEIGHT}") #make the default size of the window
+        self.configure(background=self.BACKGROUND) # make the background color what we chose
     
         # make the rows and columns fill up all space
         for i in range(self.COLUMNS):
-            self.grid_columnconfigure(i, weight=1)
+            self.grid_columnconfigure(i, weight = 1) #must add weight parameter so that stuff doesnt get smushed
         for i in range(self.ROWS):
-            self.grid_rowconfigure(i, weight=1)
+            self.grid_rowconfigure(i, weight = 1)
 
-        # create and draw all the buttons
-        self.foldbutton = tk.Button(self, text="FOLD") #the fold button
-        self.checkbutton = tk.Button(self, text= "CHECK") # the check button
-        self.callbutton = tk.Button(self, text="CALL") # button for raising
-        self.raiseslider = tk.Scale(self, from_ =500, to=0) # slider for raising
-        self.raisebutton = tk.Button(self, text = "RAISE") # label for the raise slider
-        
-        #now draw out the buttons
-        self.foldbutton.grid(row=4, column=4) # draw it out. uses grid instead o fpack or place so that it doesnt look funky in full screen
-        self.checkbutton.grid(row=4, column=3)
-        self.callbutton.grid(row=4, column=2)
-        self.raiseslider.grid(row=4, column=1)
-        self.raisebutton.grid(row=5, column=1) #position the label close enough
         
         #makes labels labels and players names
         self.potlabel = tk.Label(self, text = "CURRENT POT AMOUNT:") #label the pot
@@ -114,12 +108,73 @@ class PokerGame(tk.Tk): # base class is Tk
         """Updates the values for the pot and each player money pile"""
         self.potamount = tk.Label(self, text=str(self.pot)+"$")
         self.humanmoney = tk.Label(self, text = str(self.players[0].money)+"$")
+        self.humanbet = tk.Label(self, text = f"Amount bet: {self.players[0].lastbet}$")
         self.computermoney = tk.Label(self, text=str(self.players[1].money)+"$")
+        self.computerbet = tk.Label(self, text = f"Amount bet: {self.players[1].lastbet}$")
         #now display the labels
         self.potamount.grid(row=2, column=1)
         self.humanmoney.grid(row = 5, column = 8, sticky="ne")
+        self.humanbet.grid(row = 5, column = 6, sticky = "n")
         self.computermoney.grid(row = 1, column = 8, sticky="ne")
+        self.computerbet.grid(row = 1, column = 6, sticky = "n")
 
+    def update_buttons(self):
+        """Updates the buttons and draws them"""
+        # create and draw all the buttons
+        self.foldbutton = tk.Button(self, text="FOLD") #the fold button
+        self.checkbutton = tk.Button(self, text= "CHECK") # the check button
+        self.callbutton = tk.Button(self, text="CALL") # button for raising
+        self.raiseslider = tk.Scale(self, from_ =500, to=0) # slider for raising
+        self.raisebutton = tk.Button(self, text = "RAISE") # label for the raise slider
+        
+        #now draw out the buttons
+        self.foldbutton.grid(row=4, column=4) # draw it out. uses grid instead o fpack or place so that it doesnt look funky in full screen
+        self.checkbutton.grid(row=4, column=3)
+        self.callbutton.grid(row=4, column=2)
+        self.raiseslider.grid(row=4, column=1)
+        self.raisebutton.grid(row=5, column=1) #position the label close enough
+
+    def game_over(self):
+        """Called when a game of poker is over"""
+        if self.players[0].alive: #huamn is alive = they won
+            self.title(f"{self.username} WINS")
+        else:
+            self.title(f"LEVEL {self.players[1].difficulty} BOT WINS")
+        self.destroy() #close the window
+    
+    def give_cards(self):
+        """Distributes some cards (determined by how many cards already in table)
+        This function would only be called when game state is WAITING"""
+        def _number_of_None(ls):
+            """Helper function that returns the number of None in a list of cards"""
+            count = 0
+            for card in ls:
+                if str(card) == "None": #need to take strings becaseu Card class doesnt support comparison with Nonetype object
+                    count+=1
+            return count
+
+        if self.players[0].pocket == [None, None]: # empty pocket ahnds so distribute pocket cards
+            for i in range(2): #2 cards per player
+                self.players[0].pocket[i] = self.deck.pop(faceUp = True) 
+                self.players[1].pocket[i] = self.deck.pop(faceUp = False)
+        elif _number_of_None(self.community) == 5: # no cards yet = at beginning
+            for i in range(3):
+                self.community[i] = self.deck.pop(faceUp = True)
+        elif _number_of_None(self.community) == 2: # turn
+            self.community[4] = self.deck.pop(faceUp=True)
+        else: #river
+            self.community[4] = self.deck.pop(faceUp=True)
+        self.update_cards()
+    
+    def new_round(self):
+        """Initializes stuff when a new round happens"""
+        self.pot = 0 # reinitialize pot 
+        self.community = [None for _ in range(5)] #list of 5 Nones to begin with
+        self.deck = Deck() #make a new deck
+        self.deck.shuffle() #shuffle the deck
+        self.cards = [None for _ in range(len(self.community) + 2*len(self.players))] # 9 total cards
+        # i will use this to store the images for the cards when displaying them 
+        
 
 class Menu(tk.Tk):   
     """A class to display the inital menu"""

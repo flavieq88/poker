@@ -45,9 +45,11 @@ class Deck(object):
         """Removes the card from the deck"""
         self.deck.remove(card)
 
-    def pop(self):
+    def pop(self, faceUp=True):
         """Removes and returns one card from the deck"""
-        return self.deck.pop()
+        p = self.deck.pop()
+        p.faceUp = faceUp
+        return p
     
     
         
@@ -62,10 +64,15 @@ if __name__ == "__main__":
     AceSpade.flip()
     assert AceSpade.faceUp == False
     assert str(AceSpade) == "card"
-    d = Deck()
+    dd = Deck(faceUp = True)
+    dd.shuffle()
+    print(dd.deck)
+
+    d = Deck(faceUp = False)
     assert len(d.deck) == 52
     d.shuffle()
-    c = d.pop()
+    c = d.pop(faceUp=False)
+    assert str(c) == "card"
     c.flip()
     print(c)
     TwoClub = Card(2, "Club")
