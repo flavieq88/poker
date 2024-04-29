@@ -29,14 +29,16 @@ class PokerGame(tk.Tk): # base class is Tk
         #first: an opening menu to ask for username and bot difficulty
         #self.username, difficulty= self.menu()
         self.username = username
-        self.difficulty = difficulty
 
-        #other attributes for the game:
-        self.players = [Player(), Bot(self.difficulty)]
+        #other attributes for the game itself:
+        self.players = [Player(), Bot(difficulty)]
         self.pot = 0
         self.smallblind = SB
-        self.community = [None for _ in range(5)] #list of 5 None
+        self.community = [None for _ in range(5)] #list of 5 None to begin with
         self.deck = Deck()
+
+        self.cards = [None for _ in range(len(self.community) + 2*len(self.players))] # 9 total cards
+        # i will use this to store the images for the cards when displaying them
 
         self.draw_initial() # draw the table and labels and stuff
 
@@ -73,7 +75,7 @@ class PokerGame(tk.Tk): # base class is Tk
         #makes labels labels and players names
         self.potlabel = tk.Label(self, text = "CURRENT POT AMOUNT:") #label the pot
         self.humanlabel = tk.Label(self, text=self.username)
-        self.computerlabel = tk.Label(self, text=f"PLAYER2: LEVEL {self.difficulty}")
+        self.computerlabel = tk.Label(self, text=f"PLAYER2: LEVEL {self.players[1].difficulty}")
         #now display the labels
         self.potlabel.grid(row=2, column=1, sticky="n")
         self.humanlabel.grid(row = 4, column = 5, columnspan = 4, sticky="e")
@@ -89,23 +91,24 @@ class PokerGame(tk.Tk): # base class is Tk
         #first, display the cards in human players pocket cards
         for i in range(len(self.players[0].pocket)):
             path = f"images/{str(self.players[0].pocket[i])}.png"
-            self.image = ImageTk.PhotoImage(Image.open(path))
-            label = tk.Label(image=self.image)
-            label.grid(row=4, column = 10+2*i, rowspan=2, columnspan=2)
+            self.cards[i] = ImageTk.PhotoImage(Image.open(path))
+            cardlabel = tk.Label(image=self.cards[i])
+            cardlabel.grid(row=4, column = 10+2*i, rowspan=2, columnspan=2)
 
         #then display the community cards in middle
         for j in range(len(self.community)):
             path = f"images/{str(self.community[j])}.png"
-            self.image = ImageTk.PhotoImage(Image.open(path))
-            label = tk.Label(image=self.image)
-            label.grid(row=2, column = 4+2*j, rowspan=2, columnspan=2)
+            self.cards[2+j] = ImageTk.PhotoImage(Image.open(path))
+            cardlabel = tk.Label(image=self.cards[2+j])
+            cardlabel.grid(row=2, column = 4+2*j, rowspan=2, columnspan=2)
 
         #lastly display the pocket cards iof the oopponent (bot)
         for k in range(len(self.players[1].pocket)):
             path = f"images/{str(self.players[1].pocket[k])}.png"
-            self.image = ImageTk.PhotoImage(Image.open(path))
-            label = tk.Label(image=self.image)
-            label.grid(row=0, column = 10+2*k, rowspan=2, columnspan=2)
+            self.cards[7+k] = ImageTk.PhotoImage(Image.open(path))
+            cardlabel = tk.Label(image=self.cards[7+k])
+            cardlabel.grid(row=0, column = 10+2*k, rowspan=2, columnspan=2)
+
     
     def update_pots(self):
         """Updates the values for the pot and each player money pile"""
@@ -163,8 +166,8 @@ class Menu(tk.Tk):
             return "PLAYER1", self.difficulty
 
 if __name__ == '__main__':
-    menu = Menu()
+    menu = Menu() #first display the menu
     menu.mainloop()
-    username, difficulty = menu.return_stuff()
-    app = PokerGame(username, difficulty)
-    app.mainloop()
+    username, difficulty = menu.return_stuff() #get the info from menu
+    app = PokerGame(username, difficulty) 
+    app.mainloop() # start the game
