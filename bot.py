@@ -3,7 +3,7 @@
 #file for the computer bot
 
 from players import Player
-from random import shuffle
+from random import shuffle, randint
 from table import *
 from winninghand import *
 
@@ -46,10 +46,34 @@ def handstrength(pocketcards, community, n_iter=1000, n_samples=10):
 
 class Bot(Player): #inherit from Player
 
-    def __init__(self, difficulty=0, pocket = [None, None], money = 500):
+    def __init__(self, difficulty="EASY", pocket = [None, None], money = 500):
         super().__init__(pocket, money)
-        self.difficulty = difficulty #0, 1 or 2 going from easy to hard
+        self.difficulty = difficulty #string, either EASY, MEDIUM, HARD (determined by user choice in GUI)
 
+    def potodds(self, game):
+        current = game.pot
+        needed = game.players[0].lastbet - self.lastbet # amount needed to put in to call/raise the bet
+        return needed/(current+needed)
+
+    
     def doAction(self, game): #game is a PokerGame object (the current one)
-        """evalutate hand strength and pot odds and decides to do something"""
-        h = handstrength(self.pocket, game.community)
+        """Makes the computer pick a move depending on the strategy (difficulty level)"""
+        if self.difficulty == "EASY":
+            self.random_strat(game)
+        elif self.difficulty == "MEDIUM":
+            self.passive_loose(game)
+        else: # hard
+            self.aggressive_tight(game)
+
+    def random_strat(self, game):
+        """Makes the computer do an action by picking randomly an action"""
+        pass
+
+    def passive_loose(self, game):
+        """Computer makes a move with a passive-loose strategy"""
+
+    def aggressive_tight(self, game):
+        """Computer makes a move with an aggresive-tight strategy"""
+        h = handstrength(self.pocket, game.community) #handstrength
+        p = self.potodds(game)
+        

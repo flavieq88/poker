@@ -35,6 +35,7 @@ class PokerGame(object):
         self.deck = Deck().shuffle() #with a new, full deck and shuffled
         self.smallblindplayer = (self.smallblindplayer+1)%2 #switch the small blind and big blind players
     # will prob delete this document
+    
     def betting(self):
         while self.players[0].lastbet == self.players[1].lastbet and : #continue until the players matched each other in bet
             if playerSB.doAction() == True:

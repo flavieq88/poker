@@ -1,8 +1,10 @@
 #identification section
 from players import *
 from bot import *
-import tkinter as tk
-from PIL import Image, ImageTk
+
+import tkinter as tk            # for the GUI + event driven programming
+from PIL import Image, ImageTk  # for displyaing images (cards)
+import time                     # for sleep()
 
 class PokerGame(tk.Tk): # base class is Tk
     """Application class for actually playing Poker"""
@@ -20,12 +22,11 @@ class PokerGame(tk.Tk): # base class is Tk
     #define some game states
     INPLAY = 1 # human player's turn
     GAMEOVER = 2 # game is over
-    BOTPLAY = 3 # any other time (computer playing)
     WAITING = 4 # players are waiting (both players agreed, no more betting)
     ENDROUND = 5 # at the end determine winner and give pot to winner and reinitialize stuff
 
 
-    def __init__(self, username = "", difficulty="HARD", SB = 5):
+    def __init__(self, username = "", SB = 5):
         """Initializes the application"""
         super().__init__(None) # initialize the base class
 
@@ -33,28 +34,32 @@ class PokerGame(tk.Tk): # base class is Tk
 
         #other attributes for the game itself:
         self.players = [Player(), Bot(difficulty)]
-        self.smallblind = SB
+        self.smallblind = SB # save value for the small blnid and big blinds
+        self.SBplayer = 0   #initialize this attribute, will keep track of the index of self.players who is smallblind
+                            #start with value 1 so that player ends up as first small blind
 
+        # initialize stuff for starting the game
+        self.state = self.WAITING
         self.new_round() # start a new round
 
         self.draw_initial() # draw the table and labels and stuff
         self.title("POKER TIME")
         
-        #initialize game stuff
-        self.state = self.WAITING
-        
         self.update_buttons()
         self.update_cards()
         self.update_pots()
 
-        if self.state == self.GAMEOVER: #one of the players lost
-            self.game_over() #call function to display winner and kill game
-        elif self.state == self.WAITING:
-            self.give_cards()
+        
+
+    
+            
+                
 
 
     def draw_initial(self):
-        """Initializes the table and draws all the basic stuff"""
+        """Initializes the table and draws all the basic stuff
+        All the stuff drawn here shouldnt need to be updated every (so only call this function once)
+        But I separated into a function just so it was clearer in the init what i was doing"""
         # Create the window
         self.geometry(f"{self.WIDTH}x{self.HEIGHT}") #make the default size of the window
         self.configure(background=self.BACKGROUND) # make the background color what we chose
@@ -70,17 +75,20 @@ class PokerGame(tk.Tk): # base class is Tk
         self.potlabel = tk.Label(self, text = "CURRENT POT AMOUNT:") #label the pot
         self.humanlabel = tk.Label(self, text=self.username)
         self.computerlabel = tk.Label(self, text=f"PLAYER2: LEVEL {self.players[1].difficulty}")
+
         #now display the labels
         self.potlabel.grid(row=2, column=1, sticky="n")
         self.humanlabel.grid(row = 4, column = 5, columnspan = 4, sticky="e")
         self.computerlabel.grid(row = 0, column = 8, sticky="e")
+        # all the "sticky" attributes just deal with which way the label sticks to in the grid formation (just placement)
 
 
     def update_cards(self):
         """Displays all the updated the cards on the GUI
         Cards will be: either the actual card if face up
         Or the back if its supposed to be a hidden card
-        Or white if no card has yet been placed 
+        Or green (colour of background) if no card has yet been placed 
+        All of this is done "automatically" just by using the string of the item in the list when looking up the png
         """
         #first, display the cards in human players pocket cards
         for i in range(len(self.players[0].pocket)):
@@ -105,23 +113,23 @@ class PokerGame(tk.Tk): # base class is Tk
 
     
     def update_pots(self):
-        """Updates the values for the pot and each player money pile"""
+        """Updates the values for the pot and each player balance pile"""
         self.potamount = tk.Label(self, text=str(self.pot)+"$")
-        self.humanmoney = tk.Label(self, text = str(self.players[0].money)+"$")
-        self.humanbet = tk.Label(self, text = f"Amount bet: {self.players[0].lastbet}$")
-        self.computermoney = tk.Label(self, text=str(self.players[1].money)+"$")
-        self.computerbet = tk.Label(self, text = f"Amount bet: {self.players[1].lastbet}$")
+        self.humanbalance = tk.Label(self, text = str(self.players[0].balance)+"$")
+        self.humanbet = tk.Label(self, text = f"Bet: {self.players[0].lastbet}$")
+        self.computerbalance = tk.Label(self, text=str(self.players[1].balance)+"$")
+        self.computerbet = tk.Label(self, text = f"Bet: {self.players[1].lastbet}$")
         #now display the labels
         self.potamount.grid(row=2, column=1)
-        self.humanmoney.grid(row = 5, column = 8, sticky="ne")
+        self.humanbalance.grid(row = 5, column = 8, sticky="ne")
         self.humanbet.grid(row = 5, column = 6, sticky = "n")
-        self.computermoney.grid(row = 1, column = 8, sticky="ne")
+        self.computerbalance.grid(row = 1, column = 8, sticky="ne")
         self.computerbet.grid(row = 1, column = 6, sticky = "n")
 
     def update_buttons(self):
         """Updates the buttons and draws them"""
         # create and draw all the buttons
-        self.foldbutton = tk.Button(self, text="FOLD") #the fold button
+        self.foldbutton = tk.Button(self, text="FOLD", command=self.on_click) #the fold button
         self.checkbutton = tk.Button(self, text= "CHECK") # the check button
         self.callbutton = tk.Button(self, text="CALL") # button for raising
         self.raiseslider = tk.Scale(self, from_ =500, to=0) # slider for raising
@@ -136,6 +144,9 @@ class PokerGame(tk.Tk): # base class is Tk
 
     def game_over(self):
         """Called when a game of poker is over"""
+        self.after(1000)
+        print("here")
+        pass
         if self.players[0].alive: #huamn is alive = they won
             self.title(f"{self.username} WINS")
         else:
@@ -152,8 +163,8 @@ class PokerGame(tk.Tk): # base class is Tk
                 if str(card) == "None": #need to take strings becaseu Card class doesnt support comparison with Nonetype object
                     count+=1
             return count
-
-        if self.players[0].pocket == [None, None]: # empty pocket ahnds so distribute pocket cards
+        
+        if _number_of_None(self.players[0].pocket) == 2: # empty pocket ahnds so distribute pocket cards
             for i in range(2): #2 cards per player
                 self.players[0].pocket[i] = self.deck.pop(faceUp = True) 
                 self.players[1].pocket[i] = self.deck.pop(faceUp = False)
@@ -165,6 +176,7 @@ class PokerGame(tk.Tk): # base class is Tk
         else: #river
             self.community[4] = self.deck.pop(faceUp=True)
         self.update_cards()
+
     
     def new_round(self):
         """Initializes stuff when a new round happens"""
@@ -173,15 +185,40 @@ class PokerGame(tk.Tk): # base class is Tk
         self.deck = Deck() #make a new deck
         self.deck.shuffle() #shuffle the deck
         self.cards = [None for _ in range(len(self.community) + 2*len(self.players))] # 9 total cards
-        # i will use this to store the images for the cards when displaying them 
+         # i will use this to store the images for the cards when displaying them 
+        self.give_cards()
+        self.SBplayer = (self.SBplayer+1) % len(self.players)  #switch small blind and big blind, modulo for wrap around
+
+        if self.SBplayer == 1: # if computer is small blind, it should act first
+            self.computer_turn()
         
+        self.state = self.INPLAY # now it is the turn for the player. 
+    
+
+
+    def computer_turn(self):
+        """Makes the game sleep for a second then let computer make an action"""
+        self.after(1000, self.players[1].doAction(self))
+        self.update_pots()
+
+
+
+    def on_click(self):
+        """Defines what happens on a click"""
+        if self.state == self.GAMEOVER or self.state == self.WAITING:
+            return #ignore button clicks when it is not player turn
+        print("jere")
+        
+        
+
+
 
 class Menu(tk.Tk):   
     """A class to display the inital menu"""
     def __init__(self):
         super().__init__(None) # initialize the base class
         self.value = "" # a place to store the response
-        self.difficulty = "" # a place to store the difficulty level
+        self.difficulty = "" # a place to store the difficulty level, either EASY, MEDIUM, HARD
         
         # draw the window
         self.canvas = tk.Canvas(self,
@@ -219,6 +256,8 @@ class Menu(tk.Tk):
             return self.value, self.difficulty
         else: #if nothing submitted
             return "PLAYER1", self.difficulty
+
+
 
 if __name__ == '__main__':
     menu = Menu() #first display the menu
