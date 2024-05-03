@@ -62,7 +62,7 @@ class Bot(Player): #inherit from Player
     def doAction(self, community, other, pot, legalmoves): #game is a PokerGame object (the current one)
         """Makes the computer pick a move depending on the strategy (difficulty level)"""
         if self.difficulty == "EASY":
-            self.random_strat(other, legalmoves)
+            return self.random_strat(other, legalmoves)
         elif self.difficulty == "MEDIUM":
             self.passive_loose(community, other, pot, legalmoves)
         else: # HARD
@@ -71,6 +71,8 @@ class Bot(Player): #inherit from Player
     def random_strat(self, other, legalmoves):
         """Makes the computer do an action by picking randomly an action"""
         number = 0
+        if not any(legalmoves): #if all in, then no legal moves
+            return #pass
         while True:
             number = randint(0, len(legalmoves)-1) #from 0 to 3 inclusive
             if legalmoves[number]: # as long as it is a legal move (not False) then continue

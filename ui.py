@@ -24,7 +24,6 @@ class PokerGame(tk.Tk): # base class is Tk
     INPLAY = 1 # human player's turn
     GAMEOVER = 2 # game is over
     WAITING = 4 # human player is waiting
-    ROUNDOVER = 5 # at the end determine winner and give pot to winner and reinitialize stuff
 
 
     def __init__(self, username = "", difficulty="EASY", SB = 5):
@@ -83,6 +82,12 @@ class PokerGame(tk.Tk): # base class is Tk
         cardlabel = tk.Label(image=self.stackcards)
         cardlabel.grid(row=2, column = 0, rowspan=2, columnspan=2)
 
+        #also initialize the buttons to avoid errors
+        self.checkbutton = tk.Button(self, text= "CHECK", command=self.on_click_check) #check button
+        self.callbutton = tk.Button(self, text=f"CALL", command=self.on_click_call) #call button
+        self.raiseslider = tk.Scale(self, from_ =0, to=0) # slider for raising
+        self.raisebutton = tk.Button(self, text = "RAISE", command=self.on_click_raise) # label for the raise slider 
+        self.foldbutton = tk.Button(self, text="FOLD", command=self.on_click_fold) #the fold button
 
 
     def blinds(self):
@@ -90,7 +95,7 @@ class PokerGame(tk.Tk): # base class is Tk
 
         self.SBplayer = (self.SBplayer+1) % len(self.players)  #switch small blind and big blind, modulo for wrap around
 
-        if self.players[self.SBplayer].balance <= self.smallblind: #SB player doesnt have enough to pay up
+        if self.players[self.SBplayer].balance < self.smallblind: #SB player doesnt have enough to pay up
             self.players[self.SBplayer].alive = False #player is dead
             self.game_over()
             return
@@ -172,9 +177,9 @@ class PokerGame(tk.Tk): # base class is Tk
         # 3 = fold (always legal)
 
         for i in range(n): #repeat for all players
-            if self.players[i].balance == 0: #went all in = cant do any moves anymore
-                continue # will have False evreywhere
-
+            if self.players[i].balance == 0: #already went all in = cant do any moves anymore
+                continue #will have False evreywhere and go to next player
+            
             #handle check legality:
             if self.players[(i+1)%2].lastbet == 0: # check is available if other player hasnt bet money that phase yet
                 legal[i][0] = True
@@ -190,7 +195,11 @@ class PokerGame(tk.Tk): # base class is Tk
                 legal[i][1] = self.players[(i+1)%2].lastbet #match the other player's last bet
             
             #handle raise legality
-            if self.players[i].balance != 0: #must have money left to raise
+            if self.players[(i+1)%2].balance == 0: #if oher person went all in, cannot raise
+                legal[i][2] = False
+            elif self.lastraise+self.players[(i+1)%2].lastbet >= self.players[i].balance:#if minimum raise is more than balance: only way is to do all in
+                legal[i][2] = (self.players[i].balance+self.players[i].lastbet, self.players[i].balance+self.players[i].lastbet)
+            elif self.players[i].balance != 0: #must have money left to raise
                 legal[i][2] = (self.lastraise+self.players[(i+1)%2].lastbet, self.players[i].balance+self.players[i].lastbet) #max raise is to go all in
             
             #handle fold legality:
@@ -202,38 +211,35 @@ class PokerGame(tk.Tk): # base class is Tk
     def update_buttons(self):
         """Updates the buttons and draws them ONLY IF LEGAL so player has no choice but to do a legal move"""
         
-        legal = self.legal_moves()[0] #only get for human player
-        
+        legal = self.legal_moves()[0] #only get legal moves for human player since buttons are for humans
+
         if legal[0]: #check is not False
             self.checkbutton = tk.Button(self, text= "CHECK", command=self.on_click_check) 
             self.checkbutton.grid(row=4, column=3)
+        else:
+            self.checkbutton.grid_forget() #make it disappear
+
         if legal[1]: #call is not False
-            self.callbutton = tk.Button(self, text=f"CALL {legal[1]}$", command=self.on_click_call) # button for raising
+            self.callbutton = tk.Button(self, text=f"CALL {legal[1]}$", command=self.on_click_call) # button for call
             self.callbutton.grid(row=4, column=2)
+        else:
+            self.callbutton.grid_forget() #make it disappear
+
         if legal[2]: #raise is not False
             self.raiseslider = tk.Scale(self, from_ =legal[2][1], to=legal[2][0]) # slider for raising
             self.raisebutton = tk.Button(self, text = "RAISE", command=self.on_click_raise) # label for the raise slider
             self.raiseslider.grid(row=4, column=1)
             self.raisebutton.grid(row=5, column=1) #position the label close enough
+        else:
+            self.raisebutton.grid_forget() #make it disappear
+            self.raiseslider.grid_forget()
+
         if legal[3]: #fold is not False
             self.foldbutton = tk.Button(self, text="FOLD", command=self.on_click_fold) #the fold button
             self.foldbutton.grid(row=4, column=4)
+        else:
+            self.foldbutton.grid_forget() #make it disappear
 
-        
-        """
-        self.foldbutton = tk.Button(self, text="FOLD", command=self.on_click_fold) #the fold button
-        self.checkbutton = tk.Button(self, text= "CHECK", command=self.on_click_check) # the check button
-        self.callbutton = tk.Button(self, text=f"CALL {2}$", command=self.on_click_call) # button for raising
-        self.raiseslider = tk.Scale(self, from_ =500, to=0) # slider for raising
-        self.raisebutton = tk.Button(self, text = "RAISE", command=self.on_click_raise) # label for the raise slider
-        
-        
-        self.foldbutton.grid(row=4, column=4) # draw it out. uses grid instead o fpack or place so that it doesnt look funky in full screen
-        self.checkbutton.grid(row=4, column=3)
-        self.callbutton.grid(row=4, column=2)
-        self.raiseslider.grid(row=4, column=1)
-        self.raisebutton.grid(row=5, column=1) #position the label close enough
-        """
 
     def game_over(self):
         """Called when a game of poker is over"""
@@ -255,9 +261,11 @@ class PokerGame(tk.Tk): # base class is Tk
                     count+=1
             return count
         
-        for i in range(len(self.players)):
-            self.players[i].lastbet = 0 #reset the "last bet" of the phase to 0 since new phase
-        self.update_pots()
+        
+
+        if _number_of_None(self.community) == 0: #called this function when no cards left = showdown!
+            self.showdown()
+            return
 
         if _number_of_None(self.players[0].pocket) == 2: # empty pocket ahnds so distribute pocket cards
             for i in range(2): #2 cards per player
@@ -265,21 +273,28 @@ class PokerGame(tk.Tk): # base class is Tk
                 self.players[1].pocket[i] = self.deck.pop(faceUp = True) #change to false
 
         elif _number_of_None(self.community) == 5: # no cards yet = at beginning
+            for i in range(len(self.players)):
+                self.players[i].lastbet = 0 #reset the "last bet" of the phase to 0 since new phase
             for i in range(3):
                 self.community[i] = self.deck.pop(faceUp = True)
             if self.SBplayer == 0: #computer is bigblind = acts first postflop
                 self.computer_turn()
 
         elif _number_of_None(self.community) == 2: # turn
+            for i in range(len(self.players)):
+                self.players[i].lastbet = 0 #reset the "last bet" of the phase to 0 since new phase
             self.community[3] = self.deck.pop(faceUp=True)
             if self.SBplayer == 0: #computer is bigblind = acts first postflop
                 self.computer_turn()
 
         elif _number_of_None(self.community) == 1: #river
+            for i in range(len(self.players)):
+                self.players[i].lastbet = 0 #reset the "last bet" of the phase to 0 since new phase
             self.community[4] = self.deck.pop(faceUp=True)
             if self.SBplayer == 0: #computer is bigblind = acts first postflop
                 self.computer_turn()
 
+        self.update_pots()
         self.update_cards()
         self.update_buttons()
 
@@ -296,16 +311,42 @@ class PokerGame(tk.Tk): # base class is Tk
         self.deck.shuffle() #shuffle the deck
         self.cards = [None for _ in range(len(self.community) + 2*len(self.players))] # 9 total cards
          # i will use this to store the images for the cards when displaying them 
-        
-        self.give_cards() #give pocket cards
-        self.blinds() #make the players pay their blinds
+        self.update_cards()
 
-        self.update_buttons()
+        for i in range(len(self.players)): #reinitilize all stuff for each player
+            self.players[i].inPlay = True
+            self.players[i].lastbet = 0
+            self.players[i].totalbet = 0
+            self.players[i].pocket = [None, None]
+        
+        self.blinds() #make the players pay their blinds
+        self.give_cards() #give pocket cards
         
         self.state = self.INPLAY # now it is the turn for the player. 
 
-    
 
+    def end_round(self):
+        """Distributes the pot to whoever won (in a case of no showdown)"""
+        if self.players[0].inPlay:
+            print("You won this round!")
+            self.players[0].balance += self.pot
+        else: #bot still in play = human lost
+            print("You lost this round!")
+            self.players[1].balance += self.pot
+        self.update_pots()
+        self.after(1000, self.new_round()) #wait 1000 ms before new round so you can see the changes
+
+    def showdown(self):
+        """Determines winner and redistributes pot in the case of a showdown"""
+        self.state = self.WAITING
+        print("showdown")
+        #show the cards of opponent
+        #give cards until all cards placed on the table
+        #sleep a second
+        # determine winner
+        # give pot to winner
+        #if tie, return the total bets
+        #call new round
 
     def computer_turn(self):
         """Makes the game sleep for a second then let computer make an action"""
@@ -313,9 +354,14 @@ class PokerGame(tk.Tk): # base class is Tk
         x = self.players[1].doAction(self.community, self.players[0], self.pot, self.legal_moves()[1])
         if x != None: # return a value = did raise
             self.lastraise = x
+            print(self.lastraise)
         self.pot = self.players[0].totalbet + self.players[1].totalbet
         self.update_pots()
         self.update_buttons()
+        if not self.players[1].inPlay: #if bot folded
+            self.end_round()
+            return
+        # find a way to check if they agree and give cards is so BUT not automatically give cards since lastbet is 0
         self.state = self.INPLAY #now time for player to play
 
 
@@ -325,6 +371,8 @@ class PokerGame(tk.Tk): # base class is Tk
         if self.state != self.INPLAY:
             return #ignore button clicks when it is not player turn
         self.players[0].fold()
+        self.state = self.WAITING
+        self.end_round()
 
 
     def on_click_raise(self): 
@@ -332,7 +380,8 @@ class PokerGame(tk.Tk): # base class is Tk
         if self.state != self.INPLAY:
             return #ignore button clicks when it is not player turn
         amount = self.raiseslider.get()
-        self.lastraise = self.players[0].raisebet(self.players[0], amount)
+        self.lastraise = self.players[0].raisebet(self.players[1], amount)
+        print(self.lastraise)
         self.pot = self.players[0].totalbet + self.players[1].totalbet
         self.after_action()
 
@@ -355,6 +404,11 @@ class PokerGame(tk.Tk): # base class is Tk
         """Does the stuff after a player does an action"""
         self.state = self.WAITING
         self.update_pots()
+
+        if self.if_agree() and (self.players[0].balance == 0 or self.players[1].balance == 0):
+            self.showdown()
+            return
+        
         if not self.if_agree():
             self.computer_turn()
         else: # agree = can move on
@@ -365,12 +419,18 @@ class PokerGame(tk.Tk): # base class is Tk
         if self.players[0].lastbet != self.players[1].lastbet: #dont agree
             if self.players[0].balance == 0 and self.players[1].totalbet >= self.players[0].totalbet:
                 # this means human went all in and bot agreed (either matched it or has already bet more)
+                print("TRUE")
                 return True
             elif self.players[1].balance == 0 and self.players[0].totalbet >= self.players[1].totalbet:
                 # this means bot went all in and human agreed
                 return True
             return False # if not the above cases then still need to continue betting
+        if self.players[0].lastbet == 0 and self.players[1].lastbet == 0: 
+            if self.state == self.WAITING: #hasnt played yet
+                return False
         return True # lastbets agrees
+
+
 
 class Menu(tk.Tk):   
     """A class to display the inital menu"""
