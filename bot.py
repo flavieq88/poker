@@ -50,30 +50,54 @@ class Bot(Player): #inherit from Player
         super().__init__(pocket, money)
         self.difficulty = difficulty #string, either EASY, MEDIUM, HARD (determined by user choice in GUI)
 
-    def potodds(self, game):
-        current = game.pot
-        needed = game.players[0].lastbet - self.lastbet # amount needed to put in to call/raise the bet
+    def potodds(self, other, pot, threshold):
+        """Calculates the pot odds based on the other Player, the curretn pot, and a threshold number for acting on pocket cards"""
+        current = pot
+        needed = other.lastbet - self.lastbet # amount needed to put in to call/raise the bet
+        if current+needed == 0: #will only happen at the bgeinning of a round
+            return threshold #helps for only playing pretty good hands initially, and prevent zero division error
         return needed/(current+needed)
 
     
-    def doAction(self, game): #game is a PokerGame object (the current one)
+    def doAction(self, community, other, pot, legalmoves): #game is a PokerGame object (the current one)
         """Makes the computer pick a move depending on the strategy (difficulty level)"""
         if self.difficulty == "EASY":
-            self.random_strat(game)
+            self.random_strat(other, legalmoves)
         elif self.difficulty == "MEDIUM":
-            self.passive_loose(game)
-        else: # hard
-            self.aggressive_tight(game)
+            self.passive_loose(community, other, pot, legalmoves)
+        else: # HARD
+            self.aggressive_tight(community, other, pot, legalmoves)
 
-    def random_strat(self, game):
+    def random_strat(self, other, legalmoves):
         """Makes the computer do an action by picking randomly an action"""
-        pass
+        number = 0
+        while True:
+            number = randint(0, len(legalmoves)-1) #from 0 to 3 inclusive
+            if legalmoves[number]: # as long as it is a legal move (not False) then continue
+                break
+        if number == 0: #random picked to check
+            self.check()
+        elif number == 1: #random picked call
+            self.callbet(other.lastbet) #call the other player's bet
+        elif number == 2: #random picked raise
+            amount = randint(legalmoves[2][0], legalmoves[2][1]) #now pick a random number to raise (within the min and max)
+            return self.raisebet(other, amount) #return the amount raised so we can save it
+        else: #random picked fold
+            if legalmoves[0]: #if check is available, then check
+                self.check()
+            else: #check not available so just fold
+                self.fold()
 
-    def passive_loose(self, game):
-        """Computer makes a move with a passive-loose strategy"""
-
-    def aggressive_tight(self, game):
-        """Computer makes a move with an aggresive-tight strategy"""
-        h = handstrength(self.pocket, game.community) #handstrength
-        p = self.potodds(game)
         
+
+    def passive_loose(self, community, other, pot, legalmoves):
+        """Computer makes a move with a passive-loose strategy"""
+        h = handstrength(self.pocket, community) #calculate handstrength
+        p = self.potodds( other, pot, 0.2) #low threshold = still play cards that are not very good at beginning
+        print(h, p)
+
+    def aggressive_tight(self, community, other, pot, legalmoves):
+        """Computer makes a move with an aggresive-tight strategy"""
+        h = handstrength(self.pocket, community) #calculate handstrength
+        p = self.potodds( other, pot, 0.5) #high threshold = only play cards that are very good at beginning
+        print(h, p)

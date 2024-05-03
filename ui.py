@@ -4,7 +4,8 @@ from bot import *
 
 import tkinter as tk            # for the GUI + event driven programming
 from PIL import Image, ImageTk  # for displyaing images (cards)
-import time                     # for sleep()
+import time                     # for sleep
+
 
 class PokerGame(tk.Tk): # base class is Tk
     """Application class for actually playing Poker"""
@@ -22,11 +23,11 @@ class PokerGame(tk.Tk): # base class is Tk
     #define some game states
     INPLAY = 1 # human player's turn
     GAMEOVER = 2 # game is over
-    WAITING = 4 # players are waiting (both players agreed, no more betting)
-    ENDROUND = 5 # at the end determine winner and give pot to winner and reinitialize stuff
+    WAITING = 4 # human player is waiting
+    ROUNDOVER = 5 # at the end determine winner and give pot to winner and reinitialize stuff
 
 
-    def __init__(self, username = "", SB = 5):
+    def __init__(self, username = "", difficulty="EASY", SB = 5):
         """Initializes the application"""
         super().__init__(None) # initialize the base class
 
@@ -35,25 +36,20 @@ class PokerGame(tk.Tk): # base class is Tk
         #other attributes for the game itself:
         self.players = [Player(), Bot(difficulty)]
         self.smallblind = SB # save value for the small blnid and big blinds
-        self.SBplayer = 0   #initialize this attribute, will keep track of the index of self.players who is smallblind
-                            #start with value 1 so that player ends up as first small blind
+        self.SBplayer = 1    # initialize this attribute, will keep track of the index of self.players who is smallblind
+                             # start with value 1 so that player ends up as first small blind
+        self.lastraise = SB  # this will keep track of the amount the last raise was (for legal minimum of raising), min is SB if no one has raised yet
 
         # initialize stuff for starting the game
         self.state = self.WAITING
-        self.new_round() # start a new round
+        
 
         self.draw_initial() # draw the table and labels and stuff
         self.title("POKER TIME")
-        
-        self.update_buttons()
-        self.update_cards()
-        self.update_pots()
 
+        self.new_round() # start a new round
         
-
-    
-            
-                
+        
 
 
     def draw_initial(self):
@@ -77,10 +73,46 @@ class PokerGame(tk.Tk): # base class is Tk
         self.computerlabel = tk.Label(self, text=f"PLAYER2: LEVEL {self.players[1].difficulty}")
 
         #now display the labels
-        self.potlabel.grid(row=2, column=1, sticky="n")
+        self.potlabel.grid(row=0, column=1, sticky="s")
         self.humanlabel.grid(row = 4, column = 5, columnspan = 4, sticky="e")
         self.computerlabel.grid(row = 0, column = 8, sticky="e")
         # all the "sticky" attributes just deal with which way the label sticks to in the grid formation (just placement)
+
+        #draw extra stuff: image of a stack of cards
+        self.stackcards = ImageTk.PhotoImage(Image.open("images/stack.png"))
+        cardlabel = tk.Label(image=self.stackcards)
+        cardlabel.grid(row=2, column = 0, rowspan=2, columnspan=2)
+
+
+
+    def blinds(self):
+        """Makes each player post their blinds"""
+
+        self.SBplayer = (self.SBplayer+1) % len(self.players)  #switch small blind and big blind, modulo for wrap around
+
+        if self.players[self.SBplayer].balance <= self.smallblind: #SB player doesnt have enough to pay up
+            self.players[self.SBplayer].alive = False #player is dead
+            self.game_over()
+            return
+        
+        if self.players[(self.SBplayer+1)%2].balance <= 2*self.smallblind: #BB player does not have enough to pay up
+            self.players[(self.SBplayer+1)%2].alive = False # player is dead
+            self.game_over()
+            return
+
+        #update attriutes for pots and stuff
+        self.players[self.SBplayer].balance -= self.smallblind #pay small blind
+        self.players[self.SBplayer].totalbet += self.smallblind
+        self.players[self.SBplayer].lastbet += self.smallblind
+        self.players[(self.SBplayer+1)%2].balance -= 2*self.smallblind #big blind = double the small blind
+        self.players[(self.SBplayer+1)%2].totalbet += 2*self.smallblind
+        self.players[(self.SBplayer+1)%2].lastbet += 2*self.smallblind
+        self.pot = self.pot + 3*self.smallblind
+
+        self.update_pots() #display these changes
+
+        if self.SBplayer == 1: # if computer is small blind, it should act first (since blinds are at preflop stage)
+            self.computer_turn()
 
 
     def update_cards(self):
@@ -110,7 +142,7 @@ class PokerGame(tk.Tk): # base class is Tk
             self.cards[7+k] = ImageTk.PhotoImage(Image.open(path))
             cardlabel = tk.Label(image=self.cards[7+k])
             cardlabel.grid(row=0, column = 10+2*k, rowspan=2, columnspan=2)
-
+        
     
     def update_pots(self):
         """Updates the values for the pot and each player balance pile"""
@@ -120,42 +152,101 @@ class PokerGame(tk.Tk): # base class is Tk
         self.computerbalance = tk.Label(self, text=str(self.players[1].balance)+"$")
         self.computerbet = tk.Label(self, text = f"Bet: {self.players[1].lastbet}$")
         #now display the labels
-        self.potamount.grid(row=2, column=1)
+        self.potamount.grid(row=1, column=1)
         self.humanbalance.grid(row = 5, column = 8, sticky="ne")
-        self.humanbet.grid(row = 5, column = 6, sticky = "n")
+        self.humanbet.grid(row = 5, column = 7, sticky = "n")
         self.computerbalance.grid(row = 1, column = 8, sticky="ne")
-        self.computerbet.grid(row = 1, column = 6, sticky = "n")
+        self.computerbet.grid(row = 1, column = 7, sticky = "n")
+
+    def legal_moves(self):
+        """Returns a list of lists of the legl moves for both player
+        the index of tuple will indicate the player index
+        """
+        n = len(self.players)
+        legal = [[False, False, False, False] for _ in range(n)] 
+        #each list will strore the legal moves for the player
+        # order within each list: 
+        # 0 = check (True or False if legal), 
+        # 1 = call  (Amount it will call to),
+        # 2 = raise (tuple (min, max) for raise to amount, 
+        # 3 = fold (always legal)
+
+        for i in range(n): #repeat for all players
+            if self.players[i].balance == 0: #went all in = cant do any moves anymore
+                continue # will have False evreywhere
+
+            #handle check legality:
+            if self.players[(i+1)%2].lastbet == 0: # check is available if other player hasnt bet money that phase yet
+                legal[i][0] = True
+
+            #handle call legality
+            # call always legal but the value may change
+            if self.players[(i+1)%2].totalbet > self.players[i].balance: #if amount required to call is over the balance
+                legal[i][1] = self.players[i].balance #can only go all in if call
+            elif self.players[(i+1)%2].lastbet == 0:
+                #cannot call if opponent didnt bet anything
+                legal[i][1] = False
+            else:
+                legal[i][1] = self.players[(i+1)%2].lastbet #match the other player's last bet
+            
+            #handle raise legality
+            if self.players[i].balance != 0: #must have money left to raise
+                legal[i][2] = (self.lastraise+self.players[(i+1)%2].lastbet, self.players[i].balance+self.players[i].lastbet) #max raise is to go all in
+            
+            #handle fold legality:
+            legal[i][3] = True
+
+        return legal
+
 
     def update_buttons(self):
-        """Updates the buttons and draws them"""
-        # create and draw all the buttons
-        self.foldbutton = tk.Button(self, text="FOLD", command=self.on_click) #the fold button
-        self.checkbutton = tk.Button(self, text= "CHECK") # the check button
-        self.callbutton = tk.Button(self, text="CALL") # button for raising
-        self.raiseslider = tk.Scale(self, from_ =500, to=0) # slider for raising
-        self.raisebutton = tk.Button(self, text = "RAISE") # label for the raise slider
+        """Updates the buttons and draws them ONLY IF LEGAL so player has no choice but to do a legal move"""
         
-        #now draw out the buttons
+        legal = self.legal_moves()[0] #only get for human player
+        
+        if legal[0]: #check is not False
+            self.checkbutton = tk.Button(self, text= "CHECK", command=self.on_click_check) 
+            self.checkbutton.grid(row=4, column=3)
+        if legal[1]: #call is not False
+            self.callbutton = tk.Button(self, text=f"CALL {legal[1]}$", command=self.on_click_call) # button for raising
+            self.callbutton.grid(row=4, column=2)
+        if legal[2]: #raise is not False
+            self.raiseslider = tk.Scale(self, from_ =legal[2][1], to=legal[2][0]) # slider for raising
+            self.raisebutton = tk.Button(self, text = "RAISE", command=self.on_click_raise) # label for the raise slider
+            self.raiseslider.grid(row=4, column=1)
+            self.raisebutton.grid(row=5, column=1) #position the label close enough
+        if legal[3]: #fold is not False
+            self.foldbutton = tk.Button(self, text="FOLD", command=self.on_click_fold) #the fold button
+            self.foldbutton.grid(row=4, column=4)
+
+        
+        """
+        self.foldbutton = tk.Button(self, text="FOLD", command=self.on_click_fold) #the fold button
+        self.checkbutton = tk.Button(self, text= "CHECK", command=self.on_click_check) # the check button
+        self.callbutton = tk.Button(self, text=f"CALL {2}$", command=self.on_click_call) # button for raising
+        self.raiseslider = tk.Scale(self, from_ =500, to=0) # slider for raising
+        self.raisebutton = tk.Button(self, text = "RAISE", command=self.on_click_raise) # label for the raise slider
+        
+        
         self.foldbutton.grid(row=4, column=4) # draw it out. uses grid instead o fpack or place so that it doesnt look funky in full screen
         self.checkbutton.grid(row=4, column=3)
         self.callbutton.grid(row=4, column=2)
         self.raiseslider.grid(row=4, column=1)
         self.raisebutton.grid(row=5, column=1) #position the label close enough
+        """
 
     def game_over(self):
         """Called when a game of poker is over"""
-        self.after(1000)
-        print("here")
-        pass
-        if self.players[0].alive: #huamn is alive = they won
+        if self.players[0].alive: #human is alive = they won
             self.title(f"{self.username} WINS")
         else:
             self.title(f"LEVEL {self.players[1].difficulty} BOT WINS")
-        self.destroy() #close the window
+        self.after(1000, self.destroy()) #close the window after one second
+        
     
     def give_cards(self):
         """Distributes some cards (determined by how many cards already in table)
-        This function would only be called when game state is WAITING"""
+        Marks a new phase"""
         def _number_of_None(ls):
             """Helper function that returns the number of None in a list of cards"""
             count = 0
@@ -164,54 +255,122 @@ class PokerGame(tk.Tk): # base class is Tk
                     count+=1
             return count
         
+        for i in range(len(self.players)):
+            self.players[i].lastbet = 0 #reset the "last bet" of the phase to 0 since new phase
+        self.update_pots()
+
         if _number_of_None(self.players[0].pocket) == 2: # empty pocket ahnds so distribute pocket cards
             for i in range(2): #2 cards per player
                 self.players[0].pocket[i] = self.deck.pop(faceUp = True) 
-                self.players[1].pocket[i] = self.deck.pop(faceUp = False)
+                self.players[1].pocket[i] = self.deck.pop(faceUp = True) #change to false
+
         elif _number_of_None(self.community) == 5: # no cards yet = at beginning
             for i in range(3):
                 self.community[i] = self.deck.pop(faceUp = True)
+            if self.SBplayer == 0: #computer is bigblind = acts first postflop
+                self.computer_turn()
+
         elif _number_of_None(self.community) == 2: # turn
+            self.community[3] = self.deck.pop(faceUp=True)
+            if self.SBplayer == 0: #computer is bigblind = acts first postflop
+                self.computer_turn()
+
+        elif _number_of_None(self.community) == 1: #river
             self.community[4] = self.deck.pop(faceUp=True)
-        else: #river
-            self.community[4] = self.deck.pop(faceUp=True)
+            if self.SBplayer == 0: #computer is bigblind = acts first postflop
+                self.computer_turn()
+
         self.update_cards()
+        self.update_buttons()
+
+        self.state = self.INPLAY # now will be player turn to act
+        
 
     
     def new_round(self):
         """Initializes stuff when a new round happens"""
+        self.state = self.WAITING
         self.pot = 0 # reinitialize pot 
         self.community = [None for _ in range(5)] #list of 5 Nones to begin with
         self.deck = Deck() #make a new deck
         self.deck.shuffle() #shuffle the deck
         self.cards = [None for _ in range(len(self.community) + 2*len(self.players))] # 9 total cards
          # i will use this to store the images for the cards when displaying them 
-        self.give_cards()
-        self.SBplayer = (self.SBplayer+1) % len(self.players)  #switch small blind and big blind, modulo for wrap around
+        
+        self.give_cards() #give pocket cards
+        self.blinds() #make the players pay their blinds
 
-        if self.SBplayer == 1: # if computer is small blind, it should act first
-            self.computer_turn()
+        self.update_buttons()
         
         self.state = self.INPLAY # now it is the turn for the player. 
+
     
 
 
     def computer_turn(self):
         """Makes the game sleep for a second then let computer make an action"""
-        self.after(1000, self.players[1].doAction(self))
+        time.sleep(1)
+        x = self.players[1].doAction(self.community, self.players[0], self.pot, self.legal_moves()[1])
+        if x != None: # return a value = did raise
+            self.lastraise = x
+        self.pot = self.players[0].totalbet + self.players[1].totalbet
         self.update_pots()
+        self.update_buttons()
+        self.state = self.INPLAY #now time for player to play
 
 
 
-    def on_click(self):
-        """Defines what happens on a click"""
-        if self.state == self.GAMEOVER or self.state == self.WAITING:
+    def on_click_fold(self):
+        """Defines what happens on a click for the FOLD button"""
+        if self.state != self.INPLAY:
             return #ignore button clicks when it is not player turn
-        print("jere")
-        
-        
+        self.players[0].fold()
 
 
+    def on_click_raise(self): 
+        """Defines what happens on a click for the RAISE button"""
+        if self.state != self.INPLAY:
+            return #ignore button clicks when it is not player turn
+        amount = self.raiseslider.get()
+        self.lastraise = self.players[0].raisebet(self.players[0], amount)
+        self.pot = self.players[0].totalbet + self.players[1].totalbet
+        self.after_action()
+
+    
+    def on_click_call(self):
+        if self.state != self.INPLAY:
+            return #ignore button clicks when it is not player turn
+        self.players[0].callbet(self.players[1].lastbet)
+        self.pot = self.players[0].totalbet + self.players[1].totalbet
+        self.after_action()
+    
+    def on_click_check(self):
+        if self.state != self.INPLAY:
+            return #ignore button clicks when it is not player turn
+        #if pressed check
+        self.after_action()
+        
+    
+    def after_action(self):
+        """Does the stuff after a player does an action"""
+        self.state = self.WAITING
+        self.update_pots()
+        if not self.if_agree():
+            self.computer_turn()
+        else: # agree = can move on
+            self.give_cards()
+
+    def if_agree(self):
+        """Returns True if the betting round ends because they agree"""
+        if self.players[0].lastbet != self.players[1].lastbet: #dont agree
+            if self.players[0].balance == 0 and self.players[1].totalbet >= self.players[0].totalbet:
+                # this means human went all in and bot agreed (either matched it or has already bet more)
+                return True
+            elif self.players[1].balance == 0 and self.players[0].totalbet >= self.players[1].totalbet:
+                # this means bot went all in and human agreed
+                return True
+            return False # if not the above cases then still need to continue betting
+        return True # lastbets agrees
 
 class Menu(tk.Tk):   
     """A class to display the inital menu"""
