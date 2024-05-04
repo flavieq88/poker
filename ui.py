@@ -3,7 +3,7 @@ from players import *
 from bot import *
 
 import tkinter as tk            # for the GUI + event driven programming
-
+import time
 
 class PokerGame(tk.Tk): # base class is Tk
     """Application class for actually playing Poker"""
@@ -346,11 +346,11 @@ class PokerGame(tk.Tk): # base class is Tk
         self.lastraise = self.smallblind
 
         self.update_cards()
-        self.after(500)
+        time.sleep(0.5)
         
         self.blinds() #make the players pay their blinds
         self.give_pocket() #give pocket cards
-        self.after(500)
+        time.sleep(0.5)
 
         self.state = self.INPLAY # now it is the turn for the player. 
 
@@ -371,7 +371,7 @@ class PokerGame(tk.Tk): # base class is Tk
         self.state = self.WAITING
         self.update_buttons() #should be all cleared
         print("showdown")
-        self.after(1000)
+        time.sleep(1)
         for i in range(len(self.players[1].pocket)):
             self.players[1].pocket[i].flip()
             print(self.players[1].pocket[i])
@@ -380,7 +380,8 @@ class PokerGame(tk.Tk): # base class is Tk
         for i in range(len(self.community)):
             if str(self.community[i]) == "None":
                 self.community[i] = self.deck.pop(faceUp=True)
-                self.after(1000, self.update_cards) #delay so adds suspense
+                time.sleep(1)
+                self.update_cards #delay so adds suspense
                 print("new card")
         humanresult = getwinner(self.players[0].pocket+self.community, self.players[1].pocket+self.community)
         if humanresult == "Win":
@@ -412,7 +413,7 @@ class PokerGame(tk.Tk): # base class is Tk
         """Makes the game sleep for a second then let computer make an action"""
         if self.state == self.INPLAY:
             return #should be the players turn so ignore
-        self.after(1000)
+        time.sleep(1)
         x = self.players[1].doAction(self.community, self.players[0], self.pot, self.legal_moves()[1])
         if x != None: # return a value = did raise
             self.lastraise = x
