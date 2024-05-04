@@ -36,6 +36,7 @@ class PokerGame(tk.Tk): # base class is Tk
         self.SBplayer = 1    # initialize this attribute, will keep track of the index of self.players who is smallblind
                              # start with value 1 so that player ends up as first small blind
         self.lastraise = SB  # this will keep track of the amount the last raise was (for legal minimum of raising), min is SB if no one has raised yet
+        self.community = [None for _ in range(5)]
 
         # initialize stuff for starting the game
         self.state = self.WAITING
@@ -57,9 +58,9 @@ class PokerGame(tk.Tk): # base class is Tk
     
         # make the rows and columns fill up all space
         for i in range(self.COLUMNS):
-            self.grid_columnconfigure(i, weight = 1) #must add weight parameter so that stuff doesnt get smushed
+            self.columnconfigure(i, weight = 1) #must add weight parameter so that stuff doesnt get smushed
         for i in range(self.ROWS):
-            self.grid_rowconfigure(i, weight = 1)
+            self.rowconfigure(i, weight = 1)
 
         
         #makes labels labels and players names
@@ -68,32 +69,32 @@ class PokerGame(tk.Tk): # base class is Tk
         self.computerlabel = tk.Label(self, text=f"PLAYER2: LEVEL {self.players[1].difficulty}")
 
         #now display the labels
-        self.potlabel.grid(row=0, column=1, sticky="s")
-        self.humanlabel.grid(row = 4, column = 5, columnspan = 4, sticky="e")
+        self.potlabel.grid(row=0, column=0, columnspan = 6, sticky="s")
+        self.humanlabel.grid(row = 3, column = 5, columnspan = 4, rowspan=3, sticky="e")
         self.computerlabel.grid(row = 0, column = 8, sticky="e")
         # all the "sticky" attributes just deal with which way the label sticks to in the grid formation (just placement)
 
         #draw extra stuff: image of a stack of cards
         self.stackcards = tk.PhotoImage(file="images/stack.gif")
         cardlabel = tk.Label(image=self.stackcards)
-        cardlabel.grid(row=2, column = 0, rowspan=2, columnspan=2)
+        cardlabel.grid(row=2, column = 0, rowspan=2, columnspan=3)
 
         #also initialize the buttons to avoid errors
         self.checkbutton = tk.Button(self, text= "CHECK", command=self.on_click_check) #check button
-        self.checkbutton.grid(row=4, column=3)
+        self.checkbutton.grid(row=4, column=4)
         self.callbutton = tk.Button(self, text=f"CALL", command=self.on_click_call) #call button
-        self.callbutton.grid(row=4, column=2)
+        self.callbutton.grid(row=4, column=4)
         self.raiseslider = tk.Scale(self, from_ =0, to=0) # slider for raising
         self.raisebutton = tk.Button(self, text = "RAISE", command=self.on_click_raise) # label for the raise slider 
         self.raiseslider.grid(row=4, column=1)
         self.raisebutton.grid(row=5, column=1) #position the label close enough
         self.foldbutton = tk.Button(self, text="FOLD", command=self.on_click_fold) #the fold button
-        self.foldbutton.grid(row=4, column=4)
+        self.foldbutton.grid(row=4, column=2, columnspan=2)
         
         #initilalize the SB BB labels too
-        self.humanblind = tk.Label(self, text="SMALL BLIND" if self.SBplayer==0 else " BIG BLIND ")
-        self.humanblind.grid(row=5, column=8, sticky="e")
-        self.botblind = tk.Label(self, text="SMALL BLIND" if self.SBplayer==1 else " BIG BLIND ")
+        self.humanblind = tk.Label(self, text="SMALL BLIND" if self.SBplayer==1 else "BIG BLIND")
+        self.humanblind.grid(row=3, column=8, rowspan = 4, sticky="se", pady = 45)
+        self.botblind = tk.Label(self, text="SMALL BLIND" if self.SBplayer==0 else "BIG BLIND")
         self.botblind.grid(row=1, column=8, sticky="e")
 
         #initilize the pot amount labels
@@ -102,11 +103,35 @@ class PokerGame(tk.Tk): # base class is Tk
         self.humanbet = tk.Label(self, text = f"Bet: {self.players[0].lastbet}$\nTotal bet: {self.players[0].totalbet}$")
         self.computerbalance = tk.Label(self, text=f"{self.players[1].balance}$")
         self.computerbet = tk.Label(self, text = f"Bet: {self.players[1].lastbet}$\nTotal bet: {self.players[1].totalbet}$")
-        self.potamount.grid(row=1, column=1)
-        self.humanbalance.grid(row = 4, column = 8, sticky="se")
-        self.humanbet.grid(row = 4, column = 7, sticky = "s")
+        self.potamount.grid(row=1, column=0, columnspan=6)
+        self.humanbalance.grid(row = 4, column = 8, rowspan=2, sticky="e")
+        self.humanbet.grid(row = 4, column = 7, rowspan=2)
         self.computerbalance.grid(row = 1, column = 8, sticky="ne")
         self.computerbet.grid(row = 1, column = 7, sticky = "n")
+
+        self.cards = [[None, None] for _ in range(len(self.community) + 2*len(self.players))] # 9 total cards
+         # i will use this to store the images and labels for the cards when displaying them 
+        #initialize the cards stuff
+        #first, display the cards in human players pocket cards
+        for i in range(len(self.players[0].pocket)):
+            path = f"images/{str(self.players[0].pocket[i])}.gif"
+            self.cards[i][0] = tk.PhotoImage(file=path)
+            self.cards[i][1] = tk.Label(image=self.cards[i][0])
+            self.cards[i][1].grid(row=4, column = 10+2*i, rowspan=2, columnspan=2)
+
+        #then display the community cards in middle
+        for j in range(len(self.community)):
+            path = f"images/{str(self.community[j])}.gif"
+            self.cards[2+j][0] = tk.PhotoImage(file = path)
+            self.cards[2+j][1] = tk.Label(image=self.cards[2+j][0])
+            self.cards[2+j][1].grid(row=2, column = 4+2*j, rowspan=2, columnspan=2)
+
+        #lastly display the pocket cards iof the oopponent (bot)
+        for k in range(len(self.players[1].pocket)):
+            path = f"images/{str(self.players[1].pocket[k])}.gif"
+            self.cards[7+k][0] = tk.PhotoImage(file=path)
+            self.cards[7+k][1] = tk.Label(image=self.cards[7+k][0])
+            self.cards[7+k][1].grid(row=0, column = 10+2*k, rowspan=2, columnspan=2)
         
         self.update()
 
@@ -158,23 +183,19 @@ class PokerGame(tk.Tk): # base class is Tk
         for i in range(len(self.players[0].pocket)):
             path = f"images/{str(self.players[0].pocket[i])}.gif"
             self.cards[i][0] = tk.PhotoImage(file=path)
-            self.cards[i][1] = tk.Label(image=self.cards[i][0])
-            self.cards[i][1].grid(row=4, column = 10+2*i, rowspan=2, columnspan=2)
+            self.cards[i][1].config(image=self.cards[i][0])
 
         #then display the community cards in middle
         for j in range(len(self.community)):
             path = f"images/{str(self.community[j])}.gif"
             self.cards[2+j][0] = tk.PhotoImage(file = path)
-            self.cards[2+j][1] = tk.Label(image=self.cards[2+j][0])
-            self.cards[2+j][1].grid(row=2, column = 4+2*j, rowspan=2, columnspan=2)
+            self.cards[2+j][1].config(image=self.cards[2+j][0])
 
         #lastly display the pocket cards iof the oopponent (bot)
         for k in range(len(self.players[1].pocket)):
             path = f"images/{str(self.players[1].pocket[k])}.gif"
             self.cards[7+k][0] = tk.PhotoImage(file=path)
-            self.cards[7+k][1] = tk.Label(image=self.cards[7+k][0])
-            self.cards[7+k][1].grid(row=0, column = 10+2*k, rowspan=2, columnspan=2)
-
+            self.cards[7+k][1].config(image=self.cards[7+k][0])
         self.update()
     
 
@@ -240,11 +261,11 @@ class PokerGame(tk.Tk): # base class is Tk
         """Updates the buttons and draws them ONLY IF LEGAL so player has no choice but to do a legal move"""
         
         if self.state != self.INPLAY: # not player's turn so no actions possible so not display anything
-            self.checkbutton.grid_forget()
-            self.callbutton.grid_forget()
-            self.raisebutton.grid_forget() 
-            self.raiseslider.grid_forget()
-            self.foldbutton.grid_forget()
+            self.checkbutton.grid_remove()
+            self.callbutton.grid_remove()
+            self.raisebutton.grid_remove() 
+            self.raiseslider.grid_remove()
+            self.foldbutton.grid_remove()
             self.update()
             return
 
@@ -252,29 +273,29 @@ class PokerGame(tk.Tk): # base class is Tk
         print("human =", legal)
 
         if legal[0]: #check is not False  
-            self.checkbutton.grid(row=4, column=3)
+            self.checkbutton.grid(row=4, column=4)
         else:
-            self.checkbutton.grid_forget() #make it disappear
+            self.checkbutton.grid_remove() #make it disappear
 
         if legal[1]: #call is not False
-            self.callbutton.config(text=f"CALL {legal[1]:4d}$") # modufy text in button for call 
-            self.callbutton.grid(row=4, column=2)
+            self.callbutton.config(text=f"CALL {legal[1]}$") # modufy text in button for call 
+            self.callbutton.grid(row=4, column=4)
         else:
             print("call not possible for human")
-            self.callbutton.grid_forget() #make it disappear
+            self.callbutton.grid_remove() #make it disappear
 
         if legal[2]: #raise is not False
             self.raiseslider.config(from_ =legal[2][1], to=legal[2][0]) # slider for raising
             self.raiseslider.grid(row=4, column=1)
             self.raisebutton.grid(row=5, column=1) 
         else:
-            self.raisebutton.grid_forget() #make it disappear
-            self.raiseslider.grid_forget()
+            self.raisebutton.grid_remove() #make it disappear
+            self.raiseslider.grid_remove()
 
         if legal[3]: #fold is not False
-            self.foldbutton.grid(row=4, column=4)
+            self.foldbutton.grid(row=4, column=2, columnspan=2)
         else:
-            self.foldbutton.grid_forget() #make it disappear
+            self.foldbutton.grid_remove() #make it disappear
 
         self.update()
 
@@ -289,14 +310,14 @@ class PokerGame(tk.Tk): # base class is Tk
             print("BOT WON THE GAME")
         self.update()
         self.after(1000, self.quit()) #close the window after one second
-        
+
+
     def give_pocket(self):
         """Distributes pocket cards"""
         for i in range(2): #2 cards per player
             self.players[0].pocket[i] = self.deck.pop(faceUp = True) 
             self.players[1].pocket[i] = self.deck.pop(faceUp = False) #not visible to us
         self.update_cards()
-        self.after(1000)
 
 
     def give_cards(self):
@@ -349,7 +370,7 @@ class PokerGame(tk.Tk): # base class is Tk
 
         self.pot = 0 # reinitialize pot 
         self.community = [None for _ in range(5)] #list of 5 Nones to begin with
-        self.deck = Deck() #make a new deck
+        self.deck = Deck(faceUp=False) #make a new deck
         self.deck.shuffle() #shuffle the deck
 
         for i in range(len(self.players)): #reinitilize all stuff for each player
@@ -359,12 +380,11 @@ class PokerGame(tk.Tk): # base class is Tk
             self.players[i].totalbet = 0
             self.players[i].pocket = [None, None]
 
-        self.cards = [[None, None] for _ in range(len(self.community) + 2*len(self.players))] # 9 total cards
-         # i will use this to store the images and labels for the cards when displaying them 
+        for i in range(len(self.cards)):
+            self.cards[i][0] = None
+        #reset cards images to empty
         self.lastraise = self.smallblind
-
         self.update_cards()
-        self.update_buttons()
         self.update_pots()
         self.blinds() #make the players pay their blinds
         if not self.game_ongoing():
@@ -373,10 +393,10 @@ class PokerGame(tk.Tk): # base class is Tk
         self.after(1000)
 
         self.give_pocket() #give pocket cards
+        self.after(1000)
 
         if self.SBplayer == 1: # if computer is small blind, it should act first (since blinds are at preflop stage)
             self.computer_turn() 
-            self.update_pots() #redisplay these changes
 
         self.state = self.INPLAY #time for player to act
         self.update_buttons()
@@ -384,7 +404,7 @@ class PokerGame(tk.Tk): # base class is Tk
         
     def game_ongoing(self):
         """Returns True if both players are still alive, False otherwise"""
-        return self.players[0].alive and self.players[1].alive   
+        return (self.players[0].alive and self.players[1].alive)
         
 
     def end_round(self):
@@ -399,7 +419,9 @@ class PokerGame(tk.Tk): # base class is Tk
             self.players[i].lastbet = 0
             self.players[i].totalbet = 0
         self.update_pots()
-        self.after(3000, self.new_round()) #wait 1000 ms before new round so you can see the changes
+        self.update_buttons()
+        #display a message of who won and who lost
+        self.after(3000, self.new_round) #wait 1000 ms before new round so you can see the changes
 
 
     def showdown(self):
@@ -521,6 +543,8 @@ class PokerGame(tk.Tk): # base class is Tk
         """Does the stuff after a player does an action"""
         self.state = self.WAITING
         self.update_pots()
+        self.update_buttons()
+        self.after(500)
         print("checking actions")
 
         if self.if_agree() and (self.players[0].balance == 0 or self.players[1].balance == 0):
