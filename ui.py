@@ -240,11 +240,11 @@ class PokerGame(tk.Tk): # base class is Tk
         """Updates the buttons and draws them ONLY IF LEGAL so player has no choice but to do a legal move"""
         
         if self.state != self.INPLAY: # not player's turn so no actions possible so not display anything
-            self.checkbutton.grid_remove()
-            self.callbutton.grid_remove()
-            self.raisebutton.grid_remove() 
-            self.raiseslider.grid_remove()
-            self.foldbutton.grid_remove()
+            self.checkbutton.grid_forget()
+            self.callbutton.grid_forget()
+            self.raisebutton.grid_forget() 
+            self.raiseslider.grid_forget()
+            self.foldbutton.grid_forget()
             self.update()
             return
 
@@ -254,27 +254,27 @@ class PokerGame(tk.Tk): # base class is Tk
         if legal[0]: #check is not False  
             self.checkbutton.grid(row=4, column=3)
         else:
-            self.checkbutton.grid_remove() #make it disappear
+            self.checkbutton.grid_forget() #make it disappear
 
         if legal[1]: #call is not False
             self.callbutton.config(text=f"CALL {legal[1]:4d}$") # modufy text in button for call 
             self.callbutton.grid(row=4, column=2)
         else:
             print("call not possible for human")
-            self.callbutton.grid_remove() #make it disappear
+            self.callbutton.grid_forget() #make it disappear
 
         if legal[2]: #raise is not False
             self.raiseslider.config(from_ =legal[2][1], to=legal[2][0]) # slider for raising
             self.raiseslider.grid(row=4, column=1)
             self.raisebutton.grid(row=5, column=1) 
         else:
-            self.raisebutton.grid_remove() #make it disappear
-            self.raiseslider.grid_remove()
+            self.raisebutton.grid_forget() #make it disappear
+            self.raiseslider.grid_forget()
 
         if legal[3]: #fold is not False
             self.foldbutton.grid(row=4, column=4)
         else:
-            self.foldbutton.grid_remove() #make it disappear
+            self.foldbutton.grid_forget() #make it disappear
 
         self.update()
 
