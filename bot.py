@@ -61,16 +61,21 @@ class Bot(Player): #inherit from Player
     
     def doAction(self, community, other, pot, legalmoves): #game is a PokerGame object (the current one)
         """Makes the computer pick a move depending on the strategy (difficulty level)"""
+        print("computer turn")
         if self.difficulty == "EASY":
+            print("easy mode")
             return self.random_strat(other, legalmoves)
         elif self.difficulty == "MEDIUM":
-            self.passive_loose(community, other, pot, legalmoves)
+            print("medium mode")
+            return self.passive_loose(community, other, pot, legalmoves)
         else: # HARD
-            self.aggressive_tight(community, other, pot, legalmoves)
+            print("hard mode")
+            return self.aggressive_tight(community, other, pot, legalmoves)
 
     def random_strat(self, other, legalmoves):
-        """Makes the computer do an action by picking randomly an action"""
+        """Makes the computer do an action by picking randomly an action and returns amount raised if raised"""
         number = 0
+        print("compuetr legalmoves =", legalmoves)
         if not any(legalmoves): #if all in, then no legal moves
             return #pass
         while True:
@@ -80,7 +85,7 @@ class Bot(Player): #inherit from Player
         if number == 0: #random picked to check
             self.check()
         elif number == 1: #random picked call
-            self.callbet(other.lastbet) #call the other player's bet
+            self.callbet(legalmoves[1]) #call the legal amount
         elif number == 2: #random picked raise
             amount = randint(legalmoves[2][0], legalmoves[2][1]) #now pick a random number to raise (within the min and max)
             return self.raisebet(other, amount) #return the amount raised so we can save it
@@ -93,13 +98,13 @@ class Bot(Player): #inherit from Player
         
 
     def passive_loose(self, community, other, pot, legalmoves):
-        """Computer makes a move with a passive-loose strategy"""
+        """Computer makes a move with a passive-loose strategy and returns amount raised if raised"""
         h = handstrength(self.pocket, community) #calculate handstrength
         p = self.potodds( other, pot, 0.2) #low threshold = still play cards that are not very good at beginning
         print(h, p)
 
     def aggressive_tight(self, community, other, pot, legalmoves):
-        """Computer makes a move with an aggresive-tight strategy"""
+        """Computer makes a move with an aggresive-tight strategy and retunrs amount raised if raised"""
         h = handstrength(self.pocket, community) #calculate handstrength
         p = self.potodds( other, pot, 0.5) #high threshold = only play cards that are very good at beginning
         print(h, p)
