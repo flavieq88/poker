@@ -41,6 +41,8 @@ class Player(object):
         """Modifies all attributes when a Player folds (forfeits the round)"""
         self.inPlay = False
         self.did_action = True
+        if self.balance == 0:
+            self.alive=False
         print("folded")
         
 
