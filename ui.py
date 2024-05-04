@@ -47,8 +47,6 @@ class PokerGame(tk.Tk): # base class is Tk
 
         self.new_round() # start a new round
         
-        
-
 
     def draw_initial(self):
         """Initializes the table and draws all the basic stuff
@@ -166,7 +164,8 @@ class PokerGame(tk.Tk): # base class is Tk
         #then display the community cards in middle
         for j in range(len(self.community)):
             path = f"images/{str(self.community[j])}.png"
-            self.cards[2+j][0] = ImageTk.PhotoImage(Image.open(path))
+            #self.cards[2+j][0] = ImageTk.PhotoImage(Image.open(path))
+            self.cards[2+j][0] = tk.PhotoImage(file="images/11Club.gif")
             self.cards[2+j][1] = tk.Label(image=self.cards[2+j][0])
             self.cards[2+j][1].grid(row=2, column = 4+2*j, rowspan=2, columnspan=2)
 
@@ -378,7 +377,6 @@ class PokerGame(tk.Tk): # base class is Tk
             self.players[1].pocket[i].flip()
             print(self.players[1].pocket[i])
         self.update_cards()
-        self.after(10000)
         #display the rest of the cards one by one if not all shown yet
         for i in range(len(self.community)):
             if str(self.community[i]) == "None":
