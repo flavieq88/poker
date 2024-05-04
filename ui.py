@@ -3,7 +3,6 @@ from players import *
 from bot import *
 
 import tkinter as tk            # for the GUI + event driven programming
-from PIL import Image, ImageTk  # for displyaing images (cards)
 
 
 class PokerGame(tk.Tk): # base class is Tk
@@ -75,7 +74,7 @@ class PokerGame(tk.Tk): # base class is Tk
         # all the "sticky" attributes just deal with which way the label sticks to in the grid formation (just placement)
 
         #draw extra stuff: image of a stack of cards
-        self.stackcards = ImageTk.PhotoImage(Image.open("images/stack.png"))
+        self.stackcards = tk.PhotoImage(file="images/stack.gif")
         cardlabel = tk.Label(image=self.stackcards)
         cardlabel.grid(row=2, column = 0, rowspan=2, columnspan=2)
 
@@ -156,23 +155,22 @@ class PokerGame(tk.Tk): # base class is Tk
         """
         #first, display the cards in human players pocket cards
         for i in range(len(self.players[0].pocket)):
-            path = f"images/{str(self.players[0].pocket[i])}.png"
-            self.cards[i][0] = ImageTk.PhotoImage(Image.open(path))
+            path = f"images/{str(self.players[0].pocket[i])}.gif"
+            self.cards[i][0] = tk.PhotoImage(file=path)
             self.cards[i][1] = tk.Label(image=self.cards[i][0])
             self.cards[i][1].grid(row=4, column = 10+2*i, rowspan=2, columnspan=2)
 
         #then display the community cards in middle
         for j in range(len(self.community)):
-            path = f"images/{str(self.community[j])}.png"
-            #self.cards[2+j][0] = ImageTk.PhotoImage(Image.open(path))
-            self.cards[2+j][0] = tk.PhotoImage(file="images/11Club.gif")
+            path = f"images/{str(self.community[j])}.gif"
+            self.cards[2+j][0] = tk.PhotoImage(file = path)
             self.cards[2+j][1] = tk.Label(image=self.cards[2+j][0])
             self.cards[2+j][1].grid(row=2, column = 4+2*j, rowspan=2, columnspan=2)
 
         #lastly display the pocket cards iof the oopponent (bot)
         for k in range(len(self.players[1].pocket)):
-            path = f"images/{str(self.players[1].pocket[k])}.png"
-            self.cards[7+k][0] = ImageTk.PhotoImage(Image.open(path))
+            path = f"images/{str(self.players[1].pocket[k])}.gif"
+            self.cards[7+k][0] = tk.PhotoImage(file=path)
             self.cards[7+k][1] = tk.Label(image=self.cards[7+k][0])
             self.cards[7+k][1].grid(row=0, column = 10+2*k, rowspan=2, columnspan=2)
         
@@ -211,7 +209,7 @@ class PokerGame(tk.Tk): # base class is Tk
             #handle call legality
             # call always legal but the value may change
             if self.players[(i+1)%2].totalbet > self.players[i].balance+self.players[i].totalbet: #if amount required to call is over the balance
-                legal[i][1] = self.players[i].balance #can only go all in if call
+                legal[i][1] = self.players[i].balance+self.players[i].lastbet #can only go all in if call
             elif self.players[(i+1)%2].lastbet == 0:
                 #cannot call if opponent didnt bet anything
                 legal[i][1] = False
@@ -221,7 +219,9 @@ class PokerGame(tk.Tk): # base class is Tk
             #handle raise legality
             if self.players[(i+1)%2].balance == 0: #if oher person went all in, cannot raise
                 legal[i][2] = False
-            elif self.lastraise+self.players[(i+1)%2].lastbet >= self.players[i].balance:#if minimum raise is more than balance: only way is to do all in
+            elif legal[i][1] == self.players[i].balance+self.players[i].lastbet: #if the call needed is already all in, no need for raise'
+                legal[i][2] = False
+            elif self.lastraise+self.players[(i+1)%2].lastbet >= self.players[i].balance:#if minimum raise needed is more than balance: only way is to do all in
                 legal[i][2] = (self.players[i].balance+self.players[i].lastbet, self.players[i].balance+self.players[i].lastbet)
             elif self.players[i].balance != 0: #must have money left to raise
                 legal[i][2] = (self.lastraise+self.players[(i+1)%2].lastbet, self.players[i].balance+self.players[i].lastbet) #max raise is to go all in
@@ -351,8 +351,6 @@ class PokerGame(tk.Tk): # base class is Tk
         self.blinds() #make the players pay their blinds
         self.give_pocket() #give pocket cards
         self.after(500)
-        if self.SBplayer == 1:
-            self.computer_turn() #if computer is small blind, start first
 
         self.state = self.INPLAY # now it is the turn for the player. 
 
@@ -371,8 +369,9 @@ class PokerGame(tk.Tk): # base class is Tk
     def showdown(self):
         """Determines winner and redistributes pot in the case of a showdown"""
         self.state = self.WAITING
-        self.update_buttons()
+        self.update_buttons() #should be all cleared
         print("showdown")
+        self.after(1000)
         for i in range(len(self.players[1].pocket)):
             self.players[1].pocket[i].flip()
             print(self.players[1].pocket[i])
@@ -385,12 +384,20 @@ class PokerGame(tk.Tk): # base class is Tk
                 print("new card")
         humanresult = getwinner(self.players[0].pocket+self.community, self.players[1].pocket+self.community)
         if humanresult == "Win":
-            #human won so pot goes to human
-            self.players[0].balance += self.pot
+            #human won so main pot goes to human
+            if 2*self.players[0].totalbet < self.pot: #but they can only get from opponent as much as they put in
+                self.players[0].balance += 2*self.players[0].totalbet 
+                self.players[1].balance += self.pot - 2*self.players[0].totalbet
+            else: #generally they have equal total bets
+                self.players[0].balance += self.pot
             print("YOU WON")
         elif humanresult == "Loss":
             #human lost so all the pot goes to bot
-            self.players[1].balance += self.pot
+            if 2*self.players[1].totalbet < self.pot: #but they can only get from opponent as much as they put in
+                self.players[1].balance += 2*self.players[1].totalbet 
+                self.players[0].balance += self.pot - 2*self.players[1].totalbet
+            else: #generally they have equal total bets
+                self.players[1].balance += self.pot
             print("YOU LOST")
         else: #its a tie
             #each player just gets back the total bets they gave
@@ -403,6 +410,8 @@ class PokerGame(tk.Tk): # base class is Tk
 
     def computer_turn(self):
         """Makes the game sleep for a second then let computer make an action"""
+        if self.state == self.INPLAY:
+            return #should be the players turn so ignore
         self.after(1000)
         x = self.players[1].doAction(self.community, self.players[0], self.pot, self.legal_moves()[1])
         if x != None: # return a value = did raise
@@ -411,17 +420,19 @@ class PokerGame(tk.Tk): # base class is Tk
         self.pot = self.players[0].totalbet + self.players[1].totalbet
         self.update_pots()
         self.update_buttons()
+
         if not self.players[1].inPlay: #if bot folded
             self.end_round()
             return
-        #else: time for human turn
-        if self.if_agree():
+        
+        if self.if_agree(): #can move on
             if self.players[0].balance==0 or self.players[1].balance==0:
                 self.showdown()
                 return
             else:
                 self.give_cards()
-                self.state = self.INPLAY #now time for player to play
+        else: # if not, time for human turn, cannot proceed
+            self.state = self.INPLAY
 
 
 
@@ -448,7 +459,8 @@ class PokerGame(tk.Tk): # base class is Tk
     def on_click_call(self):
         if self.state != self.INPLAY:
             return #ignore button clicks when it is not player turn
-        self.players[0].callbet(self.players[1].lastbet)
+        call_amount=self.legal_moves()[0][1]
+        self.players[0].callbet(call_amount)
         self.pot = self.players[0].totalbet + self.players[1].totalbet
         self.after_action()
     
