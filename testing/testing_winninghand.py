@@ -12,7 +12,7 @@ hand1 = [Card(12, "Heart"), Card(11, "Heart"), Card(10, "Heart"), Card(8, "Heart
 hand2 = [Card(12, "Heart"), Card(11, "Spade"), Card(2, "Diamond"), Card(8, "Heart"), 
             Card(6, "Club"), Card(14, "Heart"), Card(5, "Diamond")]
 assert flush(hand1) == sorted([Card(8, "Heart"), Card(9, "Heart"), Card(10, "Heart"), 
-                        Card(11, "Heart"), Card(12, "Heart"), Card(14, "Heart")], reverse=True)
+                        Card(11, "Heart"), Card(12, "Heart"), Card(14, "Heart")], reverse =True)
 assert not flush(hand2)
 
 #testing straight
@@ -98,6 +98,9 @@ i = [Card(12, "Heart"), Card(12, "Spade"), Card(2, "Diamond"), Card(13, "Heart")
 j = [Card(4, "Heart"), Card(12, "Spade"), Card(2, "Diamond"), Card(13, "Heart"), 
              Card(14, "Club"), Card(7, "Heart"), Card(5, "Diamond")] # high card
 
+k = [Card(14, "Spade"), Card(2, "Spade"), Card(3, "Spade"), Card(4, "Spade"), 
+          Card(5, "Spade"), Card(11, "Club"), Card(3, "Diamond")] #straight A 2 3 4 5#straight flush but starting at A
+
 #make sure it gets the category correct
 assert rankHand(a)[0] == 9
 assert rankHand(b)[0] == 8
@@ -110,6 +113,9 @@ assert rankHand(g)[0] == 3
 assert rankHand(h)[0] == 2
 assert rankHand(i)[0] == 1
 assert rankHand(j)[0] == 0
+
+assert rankHand(k)[0] == 8
+
 
 g = [Card(4, "Heart"), Card(4, "Club"), Card(6, "Heart"), Card(9, "Club"), 
      Card(2, "Club"), Card(14, "Heart"), Card(3, "Spade")]

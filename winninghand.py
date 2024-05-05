@@ -148,8 +148,10 @@ def rankHand(hand):
         #list of elements in both fl and st and of same suit
         sf = []
         for i in ls[1]: #element in straight = keep the ordering
-            if i in ls[0] and i.equal(ls[0][0]):
-                sf.append(i)
+            for j in ls[0]: #each card in flush
+                if i.equal(j):
+                    sf.append(i)
+                    break
     if ls[0] and ls[1] and len(sf)>=5: #straight+flush  
         if sf[-1].rank == 14: #largest is an Ace = royal flush!!!!
             return [9]+sf[-5::][::-1] #only max 5 cards in the case there was 6 cards in the intersection
