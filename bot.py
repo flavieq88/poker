@@ -143,7 +143,7 @@ class Bot(Player): #inherit from Player
         
         h = handstrength(self.pocket, community) #calculate handstrength
         p = self.potodds(other, pot, threshold) #low threshold = still play cards that are not very good at beginning
-        
+
         if h < p: #really bad set of cards, either fold or check if possible
             if legalmoves[0]: #check is available
                 self.check()
@@ -156,7 +156,7 @@ class Bot(Player): #inherit from Player
                 if legalmoves[1]:  #call if available: have a higher threshold so it plays tight, more picky
                     self.callbet(legalmoves[1])
                     return
-                if legalmoves[0]: #call is snot available (first one to bet, and check is available)
+                if legalmoves[0]: #call is not available (first one to bet, and check is available)
                     self.check()
                     return
             elif not legalmoves[2] and h > 0.6: #if raise unavailable, then call
