@@ -50,8 +50,6 @@ class Deck(object):
         return p
     
     
-        
-
 
 #Testing code
 if __name__ == "__main__":

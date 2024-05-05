@@ -80,7 +80,7 @@ class EndMenu(tk.Tk):
         self.destroy()
 
 
-if __name__ == '__main__':
+if __name__ == '__main__': #main code!!
     while True:
         startmenu = StartMenu() #first display the menu
         startmenu.mainloop()
