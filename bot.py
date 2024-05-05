@@ -53,7 +53,7 @@ class Bot(Player): #inherit from Player
     def potodds(self, other, pot, threshold):
         """Calculates the pot odds based on the other Player, the curretn pot, and a threshold number for acting on pocket cards"""
         current = pot
-        needed = other.totalbet - self.totalbet # amount needed to put in to call/raise the bet
+        needed = other.lastbet - self.lastbet # amount needed to put in to call/raise the bet
         if current+needed == 0: #will only happen at the bgeinning of a round
             return threshold #helps for only playing pretty good hands initially, and prevent zero division error
         if needed <= 0: #means youre first to act so pot odds are not useful, just return threshold
@@ -130,7 +130,10 @@ class Bot(Player): #inherit from Player
                 else: #very good hand strength so raise a lot more
                     amount = randint(legalmoves[2][0]+2*fifth, legalmoves[2][1]) #find a random amount between halfway and max raise
                     return self.raisebet(other, amount)
-        #should have returned something by now, but if not, then just fold (which is generally always available)
+        #should have returned something by now, but if not, then just check or fold (which is generally always available)
+        if legalmoves[0]: #check is available
+            self.check()
+            return
         self.fold()
 
     def aggressive_tight(self, community, other, pot, legalmoves):

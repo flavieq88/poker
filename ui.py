@@ -1,6 +1,7 @@
 #identification section
 from players import *
 from bot import *
+from winninghand import *
 
 import tkinter as tk            # for the GUI + event driven programming
 from tkinter import messagebox  # for some reason messagebox doesnt work unless i specifially import it here
@@ -454,8 +455,7 @@ class PokerGame(tk.Tk): # base class is Tk
                 self.players[1].balance += self.pot - 2*self.players[0].totalbet
             else: #generally they have equal total bets
                 self.players[0].balance += self.pot
-            print("YOU WON")
-            messagebox.showinfo(title="ROUND OVER", message="You won this round")
+            messagebox.showinfo(title="ROUND OVER", message=f"You won this round with a {category(self.players[0].pocket+self.community)}")
         elif humanresult == "Loss":
             #human lost so all the pot goes to bot
             if 2*self.players[1].totalbet < self.pot: #but they can only get from opponent as much as they put in
@@ -463,13 +463,11 @@ class PokerGame(tk.Tk): # base class is Tk
                 self.players[0].balance += self.pot - 2*self.players[1].totalbet
             else: #generally they have equal total bets
                 self.players[1].balance += self.pot
-            print("YOU LOST")
-            messagebox.showinfo(title="ROUND OVER", message="Bot won this round")
+            messagebox.showinfo(title="ROUND OVER", message=f"Bot won this round with a {category(self.players[1].pocket+self.community)}")
         else: #its a tie
             #each player just gets back the total bets they gave
             self.players[0].balance += self.players[0].totalbet
             self.players[1].balance += self.players[1].totalbet
-            print("ITS A TIE")
             messagebox.showinfo(title="ROUND OVER", message="This round was a tie")
 
         self.new_round()

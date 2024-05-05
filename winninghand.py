@@ -191,5 +191,10 @@ def getwinner(hand1, hand2):
     else: #tie
         return "Tie"
 
-
+def category(hand):
+    """Returns the string name of the category of the hand"""
+    ls = ["high card", "one pair", "two pair", "three of a kind", "straight", "flush", "full house", "four of a kind", "straight flush", "royal flush"] 
+    #names of categories organized by index returned by rankHand
+    rank = rankHand(hand)[0] #get the index number
+    return ls[rank]
 
