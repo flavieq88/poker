@@ -30,6 +30,7 @@ class StartMenu(tk.Tk):
         # all the extra arguments for making the limit of text character to what i set
         self.box.pack(pady=20) #display the entry field
         
+        self.protocol("WM_DELETE_WINDOW", self.get_name) #make it so that if user closes the window, same as entering
         self.bind("<Return>", lambda event=None: self.get_name()) #key bind return to function
 
     def get_name(self):
