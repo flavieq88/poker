@@ -118,6 +118,9 @@ class Bot(Player): #inherit from Player
             if (h < 0.5) and legalmoves[1]: #card is not very good so just call and call is available
                 self.callbet(legalmoves[1])
                 return
+            elif not legalmoves[2] and h>0.5: #if raise unavailable, then call
+                self.callbet(legalmoves[1])
+
             elif legalmoves[2]: #pocket is quite good so lets raise
                 rangeraise = legalmoves[2][1] - legalmoves[2][0] #max raise - min raise
                 fifth = rangeraise//5 #int
@@ -134,7 +137,7 @@ class Bot(Player): #inherit from Player
         if legalmoves[0]: #check is available
             self.check()
             return
-        self.fold()
+        self.fold() #if all other actions fail, just fold
 
     def aggressive_tight(self, community, other, pot, legalmoves):
         """Computer makes a move with an aggresive-tight strategy and retunrs amount raised if raised"""
@@ -152,9 +155,11 @@ class Bot(Player): #inherit from Player
                 self.fold()
                 return
         else: #h >= threshold
-            if (h < 0.6) and legalmoves[1]: #call if available: have a higher threshold so it plays tight
+            if (h < 0.6) and legalmoves[1]: #call if available: have a higher threshold so it plays tight, more picky
                 self.callbet(legalmoves[1])
                 return
+            elif not legalmoves[2] and h>0.6: #if raise unavailable, then call
+                self.callbet(legalmoves[1])
             elif legalmoves[2]: #pocket is quite good so lets raise
                 rangeraise = legalmoves[2][1] - legalmoves[2][0] #max raise - min raise
                 eighth = rangeraise//8 #int
@@ -167,8 +172,8 @@ class Bot(Player): #inherit from Player
                 else: #very good hand strength so raise a lot more
                     amount = randint(legalmoves[2][0]+2*eighth, legalmoves[2][1]) #find a random amount between halfway and max raise
                     return self.raisebet(other, amount)
-        #should have returned something by now, but if not, then just check or fold (which is generally always available)
+        #should have returned something by now, but if not, then just call or check or fold (which is generally always available)
         if legalmoves[0]: #check is available
             self.check()
             return
-        self.fold()
+        self.fold() #if all other actions fail, just fold

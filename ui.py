@@ -288,6 +288,7 @@ class PokerGame(tk.Tk): # base class is Tk
 
         if legal[2]: #raise is not False
             self.raiseslider.config(from_ =legal[2][1], to=legal[2][0]) # slider for raising
+            self.raiseslider.set(legal[2][0]) #set intial default value to the min raise
             self.raiseslider.grid(row=4, column=1)
             self.raisebutton.grid(row=5, column=1) 
         else:
@@ -438,7 +439,7 @@ class PokerGame(tk.Tk): # base class is Tk
             self.players[1].pocket[i].flip()
             print(self.players[1].pocket[i])
         self.update_cards()
-        self.after(2000)
+        self.after(1000)
         #display the rest of the cards one by one if not all shown yet
         
         for i in range(len(self.community)):
@@ -446,7 +447,6 @@ class PokerGame(tk.Tk): # base class is Tk
                 self.community[i] = self.deck.pop(faceUp=True)
                 self.update_cards() #delay so adds suspense
                 self.after(1000)
-        self.after(1500) #have time to look at the cards
         humanresult = getwinner(self.players[0].pocket+self.community, self.players[1].pocket+self.community)
         if humanresult == "Win":
             #human won so main pot goes to human
@@ -468,7 +468,7 @@ class PokerGame(tk.Tk): # base class is Tk
             #each player just gets back the total bets they gave
             self.players[0].balance += self.players[0].totalbet
             self.players[1].balance += self.players[1].totalbet
-            messagebox.showinfo(title="ROUND OVER", message="This round was a tie")
+            messagebox.showinfo(title="ROUND OVER", message=f"This round was a tie with a {category(self.players[0].pocket+self.community)}") #doesnt matter we take it from where since tie = same
 
         self.new_round()
         
