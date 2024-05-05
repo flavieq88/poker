@@ -3,7 +3,7 @@ from players import *
 from bot import *
 
 import tkinter as tk            # for the GUI + event driven programming
-import time
+from tkinter import messagebox  # for some reason messagebox doesnt work unless i specifially import it
 
 class PokerGame(tk.Tk): # base class is Tk
     """Application class for actually playing Poker"""
@@ -64,7 +64,7 @@ class PokerGame(tk.Tk): # base class is Tk
 
         
         #makes labels labels and players names
-        self.potlabel = tk.Label(self, text = "CURRENT POT AMOUNT:") #label the pot
+        self.potlabel = tk.Label(self, text = "CURRENT POT AMOUNT:\n{0}") #label the pot + amount
         self.humanlabel = tk.Label(self, text=self.username)
         self.computerlabel = tk.Label(self, text=f"PLAYER2: LEVEL {self.players[1].difficulty}")
 
@@ -98,12 +98,10 @@ class PokerGame(tk.Tk): # base class is Tk
         self.botblind.grid(row=1, column=8, sticky="e")
 
         #initilize the pot amount labels
-        self.potamount = tk.Label(self, text=f"0$")
-        self.humanbalance = tk.Label(self, text = f"{self.players[0].balance}$")
+        self.humanbalance = tk.Label(self, text = f"Balance: {self.players[0].balance}$")
         self.humanbet = tk.Label(self, text = f"Bet: {self.players[0].lastbet}$\nTotal bet: {self.players[0].totalbet}$")
-        self.computerbalance = tk.Label(self, text=f"{self.players[1].balance}$")
+        self.computerbalance = tk.Label(self, text=f"Balance: {self.players[1].balance}$")
         self.computerbet = tk.Label(self, text = f"Bet: {self.players[1].lastbet}$\nTotal bet: {self.players[1].totalbet}$")
-        self.potamount.grid(row=1, column=0, columnspan=6)
         self.humanbalance.grid(row = 4, column = 8, rowspan=2, sticky="e")
         self.humanbet.grid(row = 4, column = 7, rowspan=2)
         self.computerbalance.grid(row = 1, column = 8, sticky="ne")
@@ -199,10 +197,10 @@ class PokerGame(tk.Tk): # base class is Tk
 
     def update_pots(self):
         """Updates the displayed values for the pot and each player balance pile and bets"""
-        self.potamount.config(text=f"{self.pot}$")
-        self.humanbalance.config(text = f"{self.players[0].balance}$")
+        self.potlabel.config(text=f"CURRENT POT AMOUNT:\n{self.pot}$")
+        self.humanbalance.config(text = f"Balance: {self.players[0].balance}$")
         self.humanbet.config(text = f"Bet: {self.players[0].lastbet}$\nTotal bet: {self.players[0].totalbet}$")
-        self.computerbalance.config(text=f"{self.players[1].balance}$")
+        self.computerbalance.config(text=f"Balance: {self.players[1].balance}$")
         self.computerbet.config(text = f"Bet: {self.players[1].lastbet}$\nTotal bet: {self.players[1].totalbet}$")
         
         self.update()
@@ -389,6 +387,9 @@ class PokerGame(tk.Tk): # base class is Tk
         self.lastraise = self.smallblind
         self.update_cards()
         self.update_pots()
+        self.update_buttons()
+        self.after(1000)
+
         self.blinds() #make the players pay their blinds
         if not self.game_ongoing():
             return # ignore rest
@@ -396,7 +397,6 @@ class PokerGame(tk.Tk): # base class is Tk
         self.after(1000)
 
         self.give_pocket() #give pocket cards
-        self.after(1000)
 
         if self.SBplayer == 1: # if computer is small blind, it should act first (since blinds are at preflop stage)
             self.computer_turn() 
@@ -413,18 +413,17 @@ class PokerGame(tk.Tk): # base class is Tk
     def end_round(self):
         """Distributes the pot to whoever won (in a case of no showdown)"""
         if self.players[0].inPlay:
-            print("You won this round!")
+            messagebox.showinfo(title="ROUND OVER", message="Bot folded\nYou won this round")
             self.players[0].balance += self.pot
         else: #bot still in play = human lost
-            print("You lost this round!")
+            messagebox.showinfo(title="ROUND OVER", message="You folded\nBot won this round")
             self.players[1].balance += self.pot
         for i in range(len(self.players)):
             self.players[i].lastbet = 0
             self.players[i].totalbet = 0
-        self.update_pots()
-        self.update_buttons()
+        #this part will only run once the user closes the message box
         #display a message of who won and who lost
-        self.after(3000, self.new_round) #wait 1000 ms before new round so you can see the changes
+        self.new_round()
 
 
     def showdown(self):
@@ -444,7 +443,7 @@ class PokerGame(tk.Tk): # base class is Tk
                 self.community[i] = self.deck.pop(faceUp=True)
                 self.update_cards() #delay so adds suspense
                 self.after(1000)
-
+        self.after(1500) #have time to look at the cards
         humanresult = getwinner(self.players[0].pocket+self.community, self.players[1].pocket+self.community)
         if humanresult == "Win":
             #human won so main pot goes to human
@@ -454,6 +453,7 @@ class PokerGame(tk.Tk): # base class is Tk
             else: #generally they have equal total bets
                 self.players[0].balance += self.pot
             print("YOU WON")
+            messagebox.showinfo(title="ROUND OVER", message="You won this round")
         elif humanresult == "Loss":
             #human lost so all the pot goes to bot
             if 2*self.players[1].totalbet < self.pot: #but they can only get from opponent as much as they put in
@@ -462,17 +462,16 @@ class PokerGame(tk.Tk): # base class is Tk
             else: #generally they have equal total bets
                 self.players[1].balance += self.pot
             print("YOU LOST")
+            messagebox.showinfo(title="ROUND OVER", message="Bot won this round")
         else: #its a tie
             #each player just gets back the total bets they gave
             self.players[0].balance += self.players[0].totalbet
             self.players[1].balance += self.players[1].totalbet
             print("ITS A TIE")
-        
-        #display a message on screen that says whatever happened
-        self.update_pots()
-        self.after(1000)
+            messagebox.showinfo(title="ROUND OVER", message="This round was a tie")
 
         self.new_round()
+        
         
 
     def computer_turn(self):
