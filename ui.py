@@ -154,11 +154,9 @@ class PokerGame(tk.Tk): # base class is Tk
         self.players[self.SBplayer].balance -= self.smallblind #pay small blind
         self.players[self.SBplayer].totalbet += self.smallblind
         self.players[self.SBplayer].lastbet += self.smallblind
-        self.players[self.SBplayer].did_action = True #kickstarted the preflop phase
         self.players[(self.SBplayer+1)%2].balance -= 2*self.smallblind #big blind = double the small blind
         self.players[(self.SBplayer+1)%2].totalbet += 2*self.smallblind
         self.players[(self.SBplayer+1)%2].lastbet += 2*self.smallblind
-        self.players[(self.SBplayer+1)%2].did_action = True #kickstarted the preflop phase
 
         self.pot = 3*self.smallblind #add SB BB contributions
 
@@ -230,6 +228,8 @@ class PokerGame(tk.Tk): # base class is Tk
             #handle check legality:
             if self.players[(i+1)%2].lastbet == 0: # check is available if other player hasnt bet money that phase yet
                 legal[i][0] = True
+            elif self.players[i].totalbet == 2*self.smallblind:
+                legal[i][0] = True
 
             #handle call legality
             # call always legal but the value may change
@@ -238,6 +238,8 @@ class PokerGame(tk.Tk): # base class is Tk
             elif self.players[(i+1)%2].lastbet == 0:
                 #cannot call if opponent didnt bet anything
                 legal[i][1] = False
+            elif self.players[i].totalbet == 2*self.smallblind and self.players[(i+1)%2].totalbet == 2*self.smallblind:
+                legal[i][1] = False # in the case of agreeing on value of bigblind, then bigblind still has opportunity to play but already called that value
             else:
                 legal[i][1] = self.players[(i+1)%2].lastbet #match the other player's last bet
             
@@ -258,8 +260,10 @@ class PokerGame(tk.Tk): # base class is Tk
 
 
     def update_buttons(self):
-        """Updates the buttons and draws them ONLY IF LEGAL so player has no choice but to do a legal move"""
+        """Updates the buttons and draws them ONLY IF LEGAL so player has no choice but to do a legal move, legal being the list returned by legal moves for the player only"""
         
+        legal = self.legal_moves()[0] #get legal moves for human only
+
         if self.state != self.INPLAY: # not player's turn so no actions possible so not display anything
             self.checkbutton.grid_remove()
             self.callbutton.grid_remove()
@@ -269,7 +273,6 @@ class PokerGame(tk.Tk): # base class is Tk
             self.update()
             return
 
-        legal = self.legal_moves()[0] #only get legal moves for human player since buttons are for humans
         print("human =", legal)
 
         if legal[0]: #check is not False  
@@ -473,12 +476,13 @@ class PokerGame(tk.Tk): # base class is Tk
         
 
     def computer_turn(self):
-        """Makes the game sleep for a second then let computer make an action"""
+        """Makes the game sleep for a second then let computer make an action, legal is the list of legal moves for the computer only, as retunred by legal_moves()"""
         if self.state == self.INPLAY:
             return #should be the players turn so ignore
         #make it display so that its the computer's turn
-        self.update_buttons()
-        x = self.players[1].doAction(self.community, self.players[0], self.pot, self.legal_moves()[1])
+        self.update_buttons() #update buttons for human -- should be all disappeared
+        legal = self.legal_moves()[1]
+        x = self.players[1].doAction(self.community, self.players[0], self.pot, legal)
         if x != None: # return a value = did raise
             self.lastraise = x
             print(self.lastraise)
