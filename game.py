@@ -72,7 +72,7 @@ class PokerGame(tk.Tk): # base class is Tk
         #makes labels labels and players names
         self.potlabel = tk.Label(self, text = "CURRENT POT AMOUNT:\n{0}") #label the pot + amount
         self.humanlabel = tk.Label(self, text=self.username)
-        self.computerlabel = tk.Label(self, text=f"PLAYER2: LEVEL {self.players[1].difficulty}")
+        self.computerlabel = tk.Label(self, text=f"LEVEL {self.players[1].difficulty} BOT")
 
         #now display the labels
         self.potlabel.grid(row=0, column=0, columnspan = 6, sticky="s")
@@ -410,7 +410,9 @@ class PokerGame(tk.Tk): # base class is Tk
         self.after(500)
 
         self.blinds() #make the players pay their blinds
-        
+        if self.quitting == True: #so the window pops up faster
+            return
+
         self.after(1000)
 
         self.give_pocket() #give pocket cards
