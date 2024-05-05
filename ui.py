@@ -41,7 +41,6 @@ class PokerGame(tk.Tk): # base class is Tk
 
         # initialize stuff for starting the game
         self.state = self.WAITING
-        
 
         self.draw_initial() # draw the table and labels and stuff
         self.title("POKER TIME")
@@ -159,13 +158,12 @@ class PokerGame(tk.Tk): # base class is Tk
 
         self.pot = 3*self.smallblind #add SB BB contributions
 
-        self.update_pots() #display these changes
-        self.update_buttons()
 
         #draw labels for small blind and big blind
         self.humanblind.config(text="SMALL BLIND" if self.SBplayer==0 else "BIG BLIND")
         self.botblind.config(text="SMALL BLIND" if self.SBplayer==1 else "BIG BLIND")
-
+        self.update_pots() #display these changes
+        self.update_buttons()
         
 
 
@@ -305,14 +303,14 @@ class PokerGame(tk.Tk): # base class is Tk
 
     def game_over(self):
         """Called when a game of poker is over"""
+        winner = ""
         if self.players[0].alive: #human is alive = they won
-            self.title(f"{self.username} WINS")
-            print("HUMAN WON THE GAME")
+            winner = self.username
         else:
-            self.title(f"LEVEL {self.players[1].difficulty} BOT WINS")
-            print("BOT WON THE GAME")
-        self.update()
-        self.after(1000, self.quit()) #close the window after one second
+            winner = f"LEVEL {self.players[1].difficulty} BOT"
+        messagebox.showinfo(title="GAME OVER", message=winner+" WON THIS GAME")
+        self.destroy() #close the window after one second
+        
 
 
     def give_pocket(self):
@@ -334,7 +332,7 @@ class PokerGame(tk.Tk): # base class is Tk
                     count+=1
             return count
         
-
+        self.lastraise = self.smallblind #reset the minimum raise amount for new betting round
         for i in range(len(self.players)):
             self.players[i].lastbet = 0 #reset the "last bet" of the phase to 0 since new phase
             self.players[i].did_action = False #means that the players havent yet done an action Yet this phase
@@ -583,7 +581,7 @@ class PokerGame(tk.Tk): # base class is Tk
         return False #any other cases no
 
 
-class Menu(tk.Tk):   
+class StartMenu(tk.Tk):   
     """A class to display the inital menu"""
     def __init__(self):
         super().__init__(None) # initialize the base class
@@ -595,15 +593,15 @@ class Menu(tk.Tk):
                                      width = 200,
                                      height = 30)
         self.canvas.pack()
-        self.title = "Menu" #create window
-        self.label0 = tk.Label(self, text="Choose your difficulty level")
+        self.title = "Start Menu" #create window
+        self.label0 = tk.Label(self, text="Choose your difficulty level:")
         self.label0.pack()
         self.clicked = tk.StringVar() #set the dropdown menu options to be str
         options = ["EASY", "MEDIUM", "HARD"]
         self.clicked.set("MEDIUM")
         self.menu = tk.OptionMenu(self, self.clicked, *options)
         self.menu.pack()
-        self.label = tk.Label(self, text="Enter your username:\n(press enter to submit)")
+        self.label = tk.Label(self, text="\nEnter your username:\n(press enter to submit)")
         self.label.pack() #display label
         self.box = tk.Entry(self, validate="key", validatecommand=(self.register(self.validate_entry), "%P")) 
         # all the extra arguments for making the limit of text character to what i set
@@ -627,11 +625,47 @@ class Menu(tk.Tk):
         else: #if nothing submitted
             return "PLAYER1", self.difficulty
 
+class EndMenu(tk.Tk):   
+    """A class to display the inital menu"""
+    def __init__(self):
+        super().__init__(None) # initialize the base class
+        self.quitting = False #place to store the player response
+        
+        # draw the window
+        self.canvas = tk.Canvas(self,
+                                     width = 200,
+                                     height = 30)
+        self.canvas.pack()
+        self.title = "End Menu" #create window
+        self.label0 = tk.Label(self, text="Game over.\nWhat would you like to do?")
+        self.label0.pack()
+        self.quitbutton = tk.Button(self, text = "QUIT", command = self.on_click_quit)
+        self.quitbutton.pack()
+        self.replaybutton = tk.Button(self, text = "PLAY AGAIN", command = self.on_click_replay)
+        self.replaybutton.pack()
+
+        self.protocol("WM_DELETE_WINDOW", self.on_click_quit) #make it so that if user closes the window, same as quitting
+
+    def on_click_quit(self):
+        """DOes the stuff when user decides to quit and stop playing"""
+        self.quitting = True
+        self.destroy()
+
+    def on_click_replay(self):
+        """Does the stuff when user decides to play another game"""
+        self.quitting = False
+        self.destroy()
 
 
 if __name__ == '__main__':
-    menu = Menu() #first display the menu
-    menu.mainloop()
-    username, difficulty = menu.return_stuff() #get the info from menu
-    app = PokerGame(username, difficulty) 
-    app.mainloop() # start the game
+    while True:
+        startmenu = StartMenu() #first display the menu
+        startmenu.mainloop()
+        username, difficulty = startmenu.return_stuff() #get the info from menu
+        app = PokerGame(username, difficulty) 
+        app.mainloop() # start the game
+        endmenu = EndMenu() #this onyl runs one the first game mainloop is over
+        endmenu.mainloop()
+        if endmenu.quitting == True:
+            break
+        

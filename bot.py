@@ -58,7 +58,7 @@ class Bot(Player): #inherit from Player
             return threshold #helps for only playing pretty good hands initially, and prevent zero division error
         if needed <= 0: #means youre first to act so pot odds are not useful, just return threshold
             return threshold
-        return (needed/(current+needed))**(1/2)
+        return (needed/(current+needed))**(3/4)
 
     
     def doAction(self, community, other, pot, legalmoves): #game is a PokerGame object (the current one)
@@ -115,11 +115,16 @@ class Bot(Player): #inherit from Player
                 self.fold()
                 return
         else: #h >= threshold
-            if (h < 0.5) and legalmoves[1]: #card is not very good so just call and call is available
-                self.callbet(legalmoves[1])
-                return
+            if (h < 0.5): #card is not very good so just call and call is available
+                if legalmoves[1]:  #call if available: have a higher threshold so it plays tight, more picky
+                    self.callbet(legalmoves[1])
+                    return
+                if legalmoves[0]: #call is not available (first one to bet, and check is available)
+                    self.check()
+                    return
             elif not legalmoves[2] and h>0.5: #if raise unavailable, then call
                 self.callbet(legalmoves[1])
+                return
 
             elif legalmoves[2]: #pocket is quite good so lets raise
                 rangeraise = legalmoves[2][1] - legalmoves[2][0] #max raise - min raise
@@ -154,12 +159,17 @@ class Bot(Player): #inherit from Player
             else: 
                 self.fold()
                 return
-        else: #h >= threshold
-            if (h < 0.6) and legalmoves[1]: #call if available: have a higher threshold so it plays tight, more picky
+        else: #h >= pot odds/threshold
+            if (h < 0.6): #not that great of a hand
+                if legalmoves[1]:  #call if available: have a higher threshold so it plays tight, more picky
+                    self.callbet(legalmoves[1])
+                    return
+                if legalmoves[0]: #call is snot available (first one to bet, and check is available)
+                    self.check()
+                    return
+            elif not legalmoves[2] and h > 0.6: #if raise unavailable, then call
                 self.callbet(legalmoves[1])
                 return
-            elif not legalmoves[2] and h>0.6: #if raise unavailable, then call
-                self.callbet(legalmoves[1])
             elif legalmoves[2]: #pocket is quite good so lets raise
                 rangeraise = legalmoves[2][1] - legalmoves[2][0] #max raise - min raise
                 eighth = rangeraise//8 #int
