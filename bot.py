@@ -53,10 +53,12 @@ class Bot(Player): #inherit from Player
     def potodds(self, other, pot, threshold):
         """Calculates the pot odds based on the other Player, the curretn pot, and a threshold number for acting on pocket cards"""
         current = pot
-        needed = other.lastbet - self.lastbet # amount needed to put in to call/raise the bet
+        needed = other.totalbet - self.totalbet # amount needed to put in to call/raise the bet
         if current+needed == 0: #will only happen at the bgeinning of a round
             return threshold #helps for only playing pretty good hands initially, and prevent zero division error
-        return needed/(current+needed)
+        if needed <= 0: #means youre first to act so pot odds are not useful, just return threshold
+            return threshold
+        return needed/current
 
     
     def doAction(self, community, other, pot, legalmoves): #game is a PokerGame object (the current one)
@@ -99,9 +101,37 @@ class Bot(Player): #inherit from Player
 
     def passive_loose(self, community, other, pot, legalmoves):
         """Computer makes a move with a passive-loose strategy and returns amount raised if raised"""
+        threshold = 0.3
+        
         h = handstrength(self.pocket, community) #calculate handstrength
-        p = self.potodds( other, pot, 0.2) #low threshold = still play cards that are not very good at beginning
+        p = self.potodds(other, pot, threshold) #low threshold = still play cards that are not very good at beginning
         print(h, p)
+        
+        if h < p: #really bad set of cards, either fold or check if possible
+            if legalmoves[0]: #check is available
+                self.check()
+                return
+            else: 
+                self.fold()
+                return
+        else: #h >= threshold
+            if h < 0.6 and legalmoves[1]: #card is not very good so just call and call is available
+                self.callbet(legalmoves[1])
+                return
+            elif legalmoves[2]: #pocket is quite good so lets raise
+                rangeraise = legalmoves[2][1] - legalmoves[2][0] #max raise - min raise
+                fourth = rangeraise//4 #int
+                if h <0.7: #not as good so raise less
+                    amount = randint(legalmoves[2][0], legalmoves[2][0]+fourth) #find a random amount between min raise and halfway 
+                    return self.raisebet(other, amount)
+                elif h<0.8:
+                    amount = randint(legalmoves[2][0]+fourth, legalmoves[2][0]+2*fourth)
+                    return self.raisebet(other, amount)
+                else: #very good hand strength so raise a lot more
+                    amount = randint(legalmoves[2][0]+2*fourth, legalmoves[2][1]) #find a random amount between halfway and max raise
+                    return self.raisebet(other, amount)
+        #should have returned something by now, but if not, then just fold (which is generally always available)
+        self.fold()
 
     def aggressive_tight(self, community, other, pot, legalmoves):
         """Computer makes a move with an aggresive-tight strategy and retunrs amount raised if raised"""

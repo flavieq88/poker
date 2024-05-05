@@ -3,7 +3,7 @@ from players import *
 from bot import *
 
 import tkinter as tk            # for the GUI + event driven programming
-from tkinter import messagebox  # for some reason messagebox doesnt work unless i specifially import it
+from tkinter import messagebox  # for some reason messagebox doesnt work unless i specifially import it here
 
 class PokerGame(tk.Tk): # base class is Tk
     """Application class for actually playing Poker"""
@@ -388,10 +388,12 @@ class PokerGame(tk.Tk): # base class is Tk
         self.update_cards()
         self.update_pots()
         self.update_buttons()
-        self.after(1000)
+        self.after(500)
 
         self.blinds() #make the players pay their blinds
+
         if not self.game_ongoing():
+            print("game ended")
             return # ignore rest
         
         self.after(1000)
@@ -600,7 +602,7 @@ class Menu(tk.Tk):
         self.label0.pack()
         self.clicked = tk.StringVar() #set the dropdown menu options to be str
         options = ["EASY", "MEDIUM", "HARD"]
-        self.clicked.set("EASY")
+        self.clicked.set("MEDIUM")
         self.menu = tk.OptionMenu(self, self.clicked, *options)
         self.menu.pack()
         self.label = tk.Label(self, text="Enter your username:\n(press enter to submit)")
