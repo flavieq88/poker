@@ -1,5 +1,3 @@
-#identification section
-
 from table import *
 
 #for determining the winning hand

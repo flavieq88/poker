@@ -1,7 +1,5 @@
-#identification section
-
 import sys
-sys.path[0] = sys.path[0].strip(r"\testing")
+sys.path[0] = sys.path[0].strip(r"\testing") #make it in correct directory
 
 from winninghand import *
 from random import shuffle

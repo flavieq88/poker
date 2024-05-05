@@ -1,6 +1,4 @@
-#identification section
-
-# Representation of the Poker table (decks, cards, etc.)
+# Class Representation of basic objects for the Poker table (decks, cards)
 
 from random import shuffle
 import functools

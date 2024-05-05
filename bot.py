@@ -1,5 +1,3 @@
-#identification section
-
 #file for the computer bot
 
 from players import Player

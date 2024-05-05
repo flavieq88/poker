@@ -1,5 +1,3 @@
-#identification section
-
 ## My analysis (see data below)
 
 The idea behind my bot is that it evaluates the hand strength of its current hand (pocket cards + current community pile)

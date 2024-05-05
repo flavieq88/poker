@@ -1,5 +1,3 @@
-#identification section
-
 import sys
 sys.path[0] = sys.path[0].strip(r"\testing") #go into correct directory
 

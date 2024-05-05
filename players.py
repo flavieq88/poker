@@ -1,5 +1,7 @@
-#identification section
 
+#This file is a class representation of poker Player object
+#its methods include actions that a player can do during a game
+#there is no checking if an action is legal because i have a legal_moves that takes care of that in the game
 
 class Player(object):
     def __init__(self, pocket = [None, None], money = 500): 
