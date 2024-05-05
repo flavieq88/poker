@@ -228,8 +228,8 @@ class PokerGame(tk.Tk): # base class is Tk
             #handle check legality:
             if self.players[(i+1)%2].lastbet == 0: # check is available if other player hasnt bet money that phase yet
                 legal[i][0] = True
-            elif self.players[i].totalbet == 2*self.smallblind:
-                legal[i][0] = True
+            elif self.players[i].totalbet == 2*self.smallblind and self.players[(i+1)%2].totalbet == 2*self.smallblind:
+                legal[i][0] = True #to handle the case where it is right after the bigbliind and they agreed on big blind value, then BB has extra turn
 
             #handle call legality
             # call always legal but the value may change
@@ -481,15 +481,16 @@ class PokerGame(tk.Tk): # base class is Tk
             return #should be the players turn so ignore
         #make it display so that its the computer's turn
         self.update_buttons() #update buttons for human -- should be all disappeared
+        self.after(500) #wait 0.5 second so we have time to see what happened
         legal = self.legal_moves()[1]
         x = self.players[1].doAction(self.community, self.players[0], self.pot, legal)
         if x != None: # return a value = did raise
             self.lastraise = x
             print(self.lastraise)
         self.pot = self.players[0].totalbet + self.players[1].totalbet
-        self.after(500) #wait 1 second so we have time to see what happened
         self.update_pots()
         self.after(500) #wait 1 second so we have time to see what happened
+        self.update_buttons() #reupdate the buttons (now should be able to act)
 
         if not self.players[1].inPlay: #if bot folded
             self.end_round()

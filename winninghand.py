@@ -184,6 +184,7 @@ def getwinner(hand1, hand2):
     """Returns "Loss" if hand1 loses, "Tie" if the two hands tie and "Win" if hand1 wins."""
     a = rankHand(hand1)
     b = rankHand(hand2)
+    print(a, b)
     if a>b: #hand1 wins
         return "Win"
     elif a<b: #hand2 wins
