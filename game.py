@@ -9,26 +9,26 @@ import tkinter as tk            # for the GUI + event driven programming
 from tkinter import messagebox  # for some reason messagebox doesnt work unless i specifially import it here
 
 class PokerGame(tk.Tk): # base class is Tk
-    """Application class for actually playing Poker"""
+    """Application class for actually playing Poker. Takes care of the game logic as well as the GUI"""
 
     #define stuff about the basic interface
-    HEIGHT = 600 #how big the window will be
+
+    #how big the initial window will be
+    HEIGHT = 600 
     WIDTH = 1000
     BACKGROUND = "#0b3b14" #make background dark green like real poker tables
-    #for plaing all buttons and images, i define the table to be 3 rows and 7 columns
 
     #seperate the table into a grid pattern (just so its easier for me to place the stuff)
+    #for displaying all buttons and images, i define the table to be 6 rows and 14 columns
     ROWS = 6
     COLUMNS = 14
 
-    #define some game states
+    #define my two game states
     INPLAY = 1 # human player's turn
-    GAMEOVER = 2 # game is over
     WAITING = 4 # human player is waiting
 
 
     def __init__(self, username = "", difficulty="EASY", SB = 5):
-        """Initializes the application"""
         super().__init__(None) # initialize the base class
 
         self.username = username
@@ -37,11 +37,12 @@ class PokerGame(tk.Tk): # base class is Tk
         self.players = [Player(), Bot(difficulty)]
         self.smallblind = SB # save value for the small blnid and big blinds
         self.SBplayer = 1    # initialize this attribute, will keep track of the index of self.players who is smallblind
-                             # start with value 1 so that player ends up as first small blind
-        self.lastraise = SB  # this will keep track of the amount the last raise was (for legal minimum of raising), min is SB if no one has raised yet
-        self.community = [None for _ in range(5)]
+                             # start with value 1 so that human player starts as first small blind
 
-        self.quitting = False
+        self.lastraise = SB  # this will keep track of the amount the last raise was (for legal minimum of raising), min is SB if no one has raised yet
+        self.community = [None for _ in range(5)] #empty community pile for now
+
+        self.quitting = False #just to keep track if quitting so i can end processes early (could have made this a game state but this is fine too)
 
         self.protocol("WM_DELETE_WINDOW", self.game_over) #make it so that if user closes the window, goes to game over
 
@@ -56,7 +57,7 @@ class PokerGame(tk.Tk): # base class is Tk
 
     def draw_initial(self):
         """Initializes the table and draws all the basic stuff
-        All the stuff drawn here shouldnt need to be updated every (so only call this function once)
+        All the stuff drawn here shouldnt need to be updated ever (so only call this function once when initializing the application)
         But I separated into a function just so it was clearer in the init what i was doing"""
         # Create the window
         self.geometry(f"{self.WIDTH}x{self.HEIGHT}") #make the default size of the window
@@ -140,7 +141,7 @@ class PokerGame(tk.Tk): # base class is Tk
         self.update()
 
     def blinds(self):
-        """Makes each player post their blinds"""
+        """Makes each player post their blinds and updates GUI"""
         if self.quitting: #if application is closed, then ignore the rest to avoid application destroyed errors
             return
 
@@ -206,7 +207,7 @@ class PokerGame(tk.Tk): # base class is Tk
     
 
     def update_pots(self):
-        """Updates the displayed values for the pot and each player balance pile and bets"""
+        """Updates the displayed values for the pot and each player balance and bets"""
         if self.quitting: #if application is closed, then ignore the rest to avoid application destroyed errors
             return
         
@@ -271,7 +272,8 @@ class PokerGame(tk.Tk): # base class is Tk
 
 
     def update_buttons(self):
-        """Updates the buttons and draws them ONLY IF LEGAL so player has no choice but to do a legal move, legal being the list returned by legal moves for the player only"""
+        """Updates the buttons and displays them ONLY IF LEGAL so player has no choice but to do a legal move, 
+        legal being the list returned by legal moves for the player only"""
         if self.quitting: #if application is closed, then ignore the rest to avoid application destroyed errors
             return
         
@@ -315,10 +317,10 @@ class PokerGame(tk.Tk): # base class is Tk
 
 
     def game_over(self):
-        """Called when a game of poker is over"""
+        """Called when a game of poker is over, displays the end message box"""
         self.quitting = True
         if self.game_ongoing(): #means the user probably clicked x, so no one actually lost
-            messagebox.showinfo(title="GAME OVER", message="YOU QUIT")
+            messagebox.showinfo(title="GAME OVER", message="You quit this game.")
             self.destroy() #close the window after one second
         else:
             winner = ""
@@ -332,7 +334,7 @@ class PokerGame(tk.Tk): # base class is Tk
 
 
     def give_pocket(self):
-        """Distributes pocket cards"""
+        """Distributes pocket cards to all players at beginning"""
         for i in range(2): #2 cards per player
             self.players[0].pocket[i] = self.deck.pop(faceUp = True) 
             self.players[1].pocket[i] = self.deck.pop(faceUp = False) #not visible to us
@@ -340,8 +342,8 @@ class PokerGame(tk.Tk): # base class is Tk
 
 
     def give_cards(self):
-        """Distributes some cards (determined by how many cards already in table)
-        Marks a new phase"""
+        """Distributes some community cards (determined by how many cards already in table)
+        Marks a new phase = new betting round"""
         def _number_of_None(ls):
             """Helper function that returns the number of None in a list of cards"""
             count = 0
@@ -384,7 +386,7 @@ class PokerGame(tk.Tk): # base class is Tk
 
     
     def new_round(self):
-        """Initializes stuff when a new round happens"""
+        """Handles all the stuff when a new round starts"""
         
         self.state = self.WAITING
 
@@ -393,7 +395,8 @@ class PokerGame(tk.Tk): # base class is Tk
         self.deck = Deck(faceUp=False) #make a new deck
         self.deck.shuffle() #shuffle the deck
 
-        for i in range(len(self.players)): #reinitilize all stuff for each player
+        #reinitilize all stuff for each player
+        for i in range(len(self.players)): 
             self.players[i].inPlay = True #both are alive in this round
             self.players[i].did_action = False #have not yet done an action this pahse
             self.players[i].lastbet = 0
@@ -413,7 +416,7 @@ class PokerGame(tk.Tk): # base class is Tk
         if self.quitting == True: #so the window pops up faster
             return
 
-        self.after(1000)
+        self.after(1000) #wait a bit
 
         self.give_pocket() #give pocket cards
 
@@ -430,7 +433,7 @@ class PokerGame(tk.Tk): # base class is Tk
         
 
     def end_round(self):
-        """Distributes the pot to whoever won (in a case of no showdown)"""
+        """Distributes the pot to whoever won (in a case of a no showdown = someone folded)"""
         if self.players[0].inPlay:
             messagebox.showinfo(title="ROUND OVER", message="Bot folded\nYou won this round")
             self.players[0].balance += self.pot
@@ -446,7 +449,7 @@ class PokerGame(tk.Tk): # base class is Tk
 
 
     def showdown(self):
-        """Determines winner and redistributes pot in the case of a showdown"""
+        """Handles the GUI events for a showdown, also determines the winner and redistributes pot in the case of a showdown"""
         self.state = self.WAITING
         self.update_buttons() #should be all cleared
         for i in range(len(self.players[1].pocket)):
@@ -481,14 +484,16 @@ class PokerGame(tk.Tk): # base class is Tk
             #each player just gets back the total bets they gave
             self.players[0].balance += self.players[0].totalbet
             self.players[1].balance += self.players[1].totalbet
-            messagebox.showinfo(title="ROUND OVER", message=f"This round was a tie with a {category(self.players[0].pocket+self.community)}") #doesnt matter we take it from where since tie = same
+            messagebox.showinfo(title="ROUND OVER", message=f"This round was a tie with a {category(self.players[0].pocket+self.community)}") 
+            #doesnt matter we take the hand category from since tie = same so they should have the same
 
         self.new_round()
         
         
 
     def computer_turn(self):
-        """Makes the game sleep for a second then let computer make an action, legal is the list of legal moves for the computer only, as retunred by legal_moves()"""
+        """Makes the game sleep for a second then let computer make an action, 
+        legal is the list of legal moves for the computer only, as retunred by legal_moves()"""
         if self.state == self.INPLAY:
             return #should be the players turn so ignore
         #make it display so that its the computer's turn
@@ -532,13 +537,14 @@ class PokerGame(tk.Tk): # base class is Tk
         """Defines what happens on a click for the RAISE button"""
         if self.state != self.INPLAY:
             return #ignore button clicks when it is not player turn
-        amount = self.raiseslider.get()
+        amount = self.raiseslider.get() #get the value raised to from the scale
         self.lastraise = self.players[0].raisebet(self.players[1], amount)
         self.pot = self.players[0].totalbet + self.players[1].totalbet
         self.after_action()
 
     
     def on_click_call(self):
+        """Defines what happens on a click for the CALL button"""
         if self.state != self.INPLAY:
             return #ignore button clicks when it is not player turn
         call_amount=self.legal_moves()[0][1]
@@ -547,6 +553,7 @@ class PokerGame(tk.Tk): # base class is Tk
         self.after_action()
     
     def on_click_check(self):
+        """Defines what happens on a click for the CHECK button"""
         if self.state != self.INPLAY:
             return #ignore button clicks when it is not player turn
         #if pressed check
@@ -555,7 +562,7 @@ class PokerGame(tk.Tk): # base class is Tk
         
     
     def after_action(self):
-        """Does the stuff after a player does an action"""
+        """Handles the stuff after the human player does an action"""
         self.state = self.WAITING
         self.update_pots()
         self.update_buttons()

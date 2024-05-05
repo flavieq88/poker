@@ -33,6 +33,7 @@ class StartMenu(tk.Tk):
         self.bind("<Return>", lambda event=None: self.get_name()) #key bind return to function
 
     def get_name(self):
+        """Save the difficulty and name that the user inputted"""
         self.difficulty = self.clicked.get()
         self.value = self.box.get().upper()
         self.destroy() #close the window
@@ -45,7 +46,7 @@ class StartMenu(tk.Tk):
         """Returns a tuple of the username and difficulty level"""
         if self.value: #not empty
             return self.value, self.difficulty
-        else: #if nothing submitted
+        else: #if nothing submitted then give a default name
             return "PLAYER1", self.difficulty
 
 class EndMenu(tk.Tk):   
@@ -62,7 +63,7 @@ class EndMenu(tk.Tk):
         self.title = "End Menu" #create window
         self.label0 = tk.Label(self, text="Game over.\nWhat would you like to do?")
         self.label0.pack()
-        self.quitbutton = tk.Button(self, text = "QUIT", command = self.on_click_quit)
+        self.quitbutton = tk.Button(self, text = "QUIT PLAYING", command = self.on_click_quit)
         self.quitbutton.pack(pady = 10)
         self.replaybutton = tk.Button(self, text = "PLAY AGAIN", command = self.on_click_replay)
         self.replaybutton.pack(pady= 10)
@@ -70,12 +71,12 @@ class EndMenu(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.on_click_quit) #make it so that if user closes the window, same as quitting
 
     def on_click_quit(self):
-        """DOes the stuff when user decides to quit and stop playing"""
+        """Handles the stuff when user decides to quit and stop playing"""
         self.quitting = True
         self.destroy()
 
     def on_click_replay(self):
-        """Does the stuff when user decides to play another game"""
+        """Handles the stuff when user decides to play another game"""
         self.quitting = False
         self.destroy()
 
@@ -89,6 +90,6 @@ if __name__ == '__main__': #main code!!
         app.mainloop() # start the game
         endmenu = EndMenu() #this onyl runs one the first game mainloop is over
         endmenu.mainloop()
-        if endmenu.quitting == True:
+        if endmenu.quitting == True: #only stop this loop if user decided to quit
             break
-        
+

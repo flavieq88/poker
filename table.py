@@ -9,6 +9,7 @@ class Card(object):
         self.rank = rank #int
         self.suit = suit #str
         self.faceUp = faceUp #bool
+    
     def flip(self):
         """Flips a card"""
         self.faceUp = not self.faceUp #reverse boolean
@@ -19,13 +20,14 @@ class Card(object):
             return str(self.rank)+self.suit
         return "card"
     
-    def equal(self, other): #because eq is only for ranks
+    def equal(self, other): #second equal to know if cards are totally the same (same rank and same suit)
         return (self.rank==other.rank and self.suit==other.suit) 
 
     #establish total ordering between cards:
     #suit doesnt matter in terms of total ordering
     def __eq__(self, other):
         return (self.rank == other.rank)
+    
     def __gt__(self, other):
         return (self.rank > other.rank)
 
@@ -62,7 +64,7 @@ if __name__ == "__main__":
     assert str(AceSpade) == "card"
     dd = Deck(faceUp = True)
     dd.shuffle()
-    print(dd.deck)
+    print("shuffled deck:", dd.deck)
 
     d = Deck(faceUp = False)
     assert len(d.deck) == 52

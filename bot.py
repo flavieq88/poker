@@ -91,7 +91,6 @@ class Bot(Player): #inherit from Player
             else: #check not available so just fold
                 self.fold()
 
-        
 
     def passive_loose(self, community, other, pot, legalmoves):
         """Computer makes a move with a passive-loose strategy and returns amount raised if raised"""
@@ -136,6 +135,7 @@ class Bot(Player): #inherit from Player
             self.check()
             return
         self.fold() #if all other actions fail, just fold
+
 
     def aggressive_tight(self, community, other, pot, legalmoves):
         """Computer makes a move with an aggresive-tight strategy and retunrs amount raised if raised"""

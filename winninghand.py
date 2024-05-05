@@ -56,7 +56,6 @@ def straight(hand):
     else:
         return False #any other case
 
-
 def count_ranks(hand):
     """Returns a dictionary with the count of all the ranks in a hand
     Useful for determining 3/4 of a kind, pairs, full house, etc."""
