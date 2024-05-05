@@ -101,7 +101,7 @@ class Bot(Player): #inherit from Player
 
     def passive_loose(self, community, other, pot, legalmoves):
         """Computer makes a move with a passive-loose strategy and returns amount raised if raised"""
-        threshold = 0.3
+        threshold = 0.2
         
         h = handstrength(self.pocket, community) #calculate handstrength
         p = self.potodds(other, pot, threshold) #low threshold = still play cards that are not very good at beginning
@@ -138,6 +138,37 @@ class Bot(Player): #inherit from Player
 
     def aggressive_tight(self, community, other, pot, legalmoves):
         """Computer makes a move with an aggresive-tight strategy and retunrs amount raised if raised"""
+        threshold = 0.4
+        
         h = handstrength(self.pocket, community) #calculate handstrength
-        p = self.potodds( other, pot, 0.5) #high threshold = only play cards that are very good at beginning
+        p = self.potodds(other, pot, threshold) #low threshold = still play cards that are not very good at beginning
         print(h, p)
+        
+        if h < p: #really bad set of cards, either fold or check if possible
+            if legalmoves[0]: #check is available
+                self.check()
+                return
+            else: 
+                self.fold()
+                return
+        else: #h >= threshold
+            if (h < 0.6) and legalmoves[1]: #call if available: have a higher threshold so it plays tight
+                self.callbet(legalmoves[1])
+                return
+            elif legalmoves[2]: #pocket is quite good so lets raise
+                rangeraise = legalmoves[2][1] - legalmoves[2][0] #max raise - min raise
+                eighth = rangeraise//8 #int
+                if h <0.7: #not as good so raise less
+                    amount = randint(legalmoves[2][0], legalmoves[2][0]+eighth) #find a random amount between min raise and halfway 
+                    return self.raisebet(other, amount)
+                elif h<0.9:
+                    amount = randint(legalmoves[2][0]+eighth, legalmoves[2][0]+2*eighth)
+                    return self.raisebet(other, amount)
+                else: #very good hand strength so raise a lot more
+                    amount = randint(legalmoves[2][0]+2*eighth, legalmoves[2][1]) #find a random amount between halfway and max raise
+                    return self.raisebet(other, amount)
+        #should have returned something by now, but if not, then just check or fold (which is generally always available)
+        if legalmoves[0]: #check is available
+            self.check()
+            return
+        self.fold()
