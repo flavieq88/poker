@@ -14,7 +14,6 @@ class Player(object):
     # the following methods are for a certain action is taken. always assumes it is legal to do that action 
     def check(self):
         """Modifies all required attributes for when a player checks"""
-        print("check")
         self.did_action = True
         return # do nothing!
 
@@ -25,7 +24,6 @@ class Player(object):
         self.balance = self.balance + self.lastbet - amount # again must take into account lastbet is "cumulative" bet
         self.lastbet = amount # update the new lastbet
         raisedamount = amount - other.lastbet
-        print("raised")
         self.did_action = True
         return raisedamount
 
@@ -35,16 +33,10 @@ class Player(object):
         self.balance = self.balance + self.lastbet - amount # again must take into account lastbet is "cumulative" bet
         self.lastbet = amount # update the new lastbet
         self.did_action = True
-        print("called")
-    
+      
     def fold(self):
         """Modifies all attributes when a Player folds (forfeits the round)"""
         self.inPlay = False
         self.did_action = True
         if self.balance == 0:
             self.alive=False
-        print("folded")
-        
-
-   
-

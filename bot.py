@@ -63,21 +63,17 @@ class Bot(Player): #inherit from Player
     
     def doAction(self, community, other, pot, legalmoves): #game is a PokerGame object (the current one)
         """Makes the computer pick a move depending on the strategy (difficulty level)"""
-        print("computer turn")
+        #must return so that it returns the aoount raised to if it does
         if self.difficulty == "EASY":
-            print("easy mode")
             return self.random_strat(other, legalmoves)
         elif self.difficulty == "MEDIUM":
-            print("medium mode")
             return self.passive_loose(community, other, pot, legalmoves)
         else: # HARD
-            print("hard mode")
             return self.aggressive_tight(community, other, pot, legalmoves)
 
     def random_strat(self, other, legalmoves):
         """Makes the computer do an action by picking randomly an action and returns amount raised if raised"""
         number = 0
-        print("compuetr legalmoves =", legalmoves)
         if not any(legalmoves): #if all in, then no legal moves
             return #pass
         while True:
@@ -105,7 +101,6 @@ class Bot(Player): #inherit from Player
         
         h = handstrength(self.pocket, community) #calculate handstrength
         p = self.potodds(other, pot, threshold) #low threshold = still play cards that are not very good at beginning
-        print(h, p)
         
         if h < p: #really bad set of cards, either fold or check if possible
             if legalmoves[0]: #check is available
@@ -150,7 +145,6 @@ class Bot(Player): #inherit from Player
         
         h = handstrength(self.pocket, community) #calculate handstrength
         p = self.potodds(other, pot, threshold) #low threshold = still play cards that are not very good at beginning
-        print(h, p)
         
         if h < p: #really bad set of cards, either fold or check if possible
             if legalmoves[0]: #check is available

@@ -39,6 +39,10 @@ class PokerGame(tk.Tk): # base class is Tk
         self.lastraise = SB  # this will keep track of the amount the last raise was (for legal minimum of raising), min is SB if no one has raised yet
         self.community = [None for _ in range(5)]
 
+        self.quitting = False
+
+        self.protocol("WM_DELETE_WINDOW", self.game_over) #make it so that if user closes the window, goes to game over
+
         # initialize stuff for starting the game
         self.state = self.WAITING
 
@@ -135,6 +139,8 @@ class PokerGame(tk.Tk): # base class is Tk
 
     def blinds(self):
         """Makes each player post their blinds"""
+        if self.quitting: #if application is closed, then ignore the rest to avoid application destroyed errors
+            return
 
         self.SBplayer = (self.SBplayer+1) % len(self.players)  #switch small blind and big blind, modulo for wrap around
 
@@ -174,6 +180,9 @@ class PokerGame(tk.Tk): # base class is Tk
         Or green (colour of background) if no card has yet been placed 
         All of this is done "automatically" just by using the string of the item in the list when looking up the file name gif
         """
+        if self.quitting: #if application is closed, then ignore the rest to avoid application destroyed errors
+            return
+        
         #first, display the cards in human players pocket cards
         for i in range(len(self.players[0].pocket)):
             path = f"images/{str(self.players[0].pocket[i])}.gif"
@@ -196,6 +205,9 @@ class PokerGame(tk.Tk): # base class is Tk
 
     def update_pots(self):
         """Updates the displayed values for the pot and each player balance pile and bets"""
+        if self.quitting: #if application is closed, then ignore the rest to avoid application destroyed errors
+            return
+        
         self.potlabel.config(text=f"CURRENT POT AMOUNT:\n{self.pot}$")
         self.humanbalance.config(text = f"Balance: {self.players[0].balance}$")
         self.humanbet.config(text = f"Bet: {self.players[0].lastbet}$\nTotal bet: {self.players[0].totalbet}$")
@@ -258,6 +270,8 @@ class PokerGame(tk.Tk): # base class is Tk
 
     def update_buttons(self):
         """Updates the buttons and draws them ONLY IF LEGAL so player has no choice but to do a legal move, legal being the list returned by legal moves for the player only"""
+        if self.quitting: #if application is closed, then ignore the rest to avoid application destroyed errors
+            return
         
         legal = self.legal_moves()[0] #get legal moves for human only
 
@@ -270,8 +284,6 @@ class PokerGame(tk.Tk): # base class is Tk
             self.update()
             return
 
-        print("human =", legal)
-
         if legal[0]: #check is not False  
             self.checkbutton.grid(row=4, column=4)
         else:
@@ -281,7 +293,6 @@ class PokerGame(tk.Tk): # base class is Tk
             self.callbutton.config(text=f"CALL {legal[1]}$") # modufy text in button for call 
             self.callbutton.grid(row=4, column=4)
         else:
-            print("call not possible for human")
             self.callbutton.grid_remove() #make it disappear
 
         if legal[2]: #raise is not False
@@ -303,13 +314,18 @@ class PokerGame(tk.Tk): # base class is Tk
 
     def game_over(self):
         """Called when a game of poker is over"""
-        winner = ""
-        if self.players[0].alive: #human is alive = they won
-            winner = self.username
+        self.quitting = True
+        if self.game_ongoing(): #means the user probably clicked x, so no one actually lost
+            messagebox.showinfo(title="GAME OVER", message="YOU QUIT")
+            self.destroy() #close the window after one second
         else:
-            winner = f"LEVEL {self.players[1].difficulty} BOT"
-        messagebox.showinfo(title="GAME OVER", message=winner+" WON THIS GAME")
-        self.destroy() #close the window after one second
+            winner = ""
+            if self.players[0].alive: #human is alive = they won
+                winner = self.username
+            else:
+                winner = f"LEVEL {self.players[1].difficulty} BOT"
+            messagebox.showinfo(title="GAME OVER", message=winner+" WON THIS GAME")
+            self.destroy() #close the window after one second
         
 
 
@@ -367,6 +383,7 @@ class PokerGame(tk.Tk): # base class is Tk
     
     def new_round(self):
         """Initializes stuff when a new round happens"""
+        
         self.state = self.WAITING
 
         self.pot = 0 # reinitialize pot 
@@ -391,10 +408,6 @@ class PokerGame(tk.Tk): # base class is Tk
         self.after(500)
 
         self.blinds() #make the players pay their blinds
-
-        if not self.game_ongoing():
-            print("game ended")
-            return # ignore rest
         
         self.after(1000)
 
@@ -432,10 +445,8 @@ class PokerGame(tk.Tk): # base class is Tk
         """Determines winner and redistributes pot in the case of a showdown"""
         self.state = self.WAITING
         self.update_buttons() #should be all cleared
-        print("showdown")
         for i in range(len(self.players[1].pocket)):
             self.players[1].pocket[i].flip()
-            print(self.players[1].pocket[i])
         self.update_cards()
         self.after(1000)
         #display the rest of the cards one by one if not all shown yet
@@ -483,7 +494,6 @@ class PokerGame(tk.Tk): # base class is Tk
         x = self.players[1].doAction(self.community, self.players[0], self.pot, legal)
         if x != None: # return a value = did raise
             self.lastraise = x
-            print(self.lastraise)
         self.pot = self.players[0].totalbet + self.players[1].totalbet
         self.update_pots()
         self.after(500) #wait 1 second so we have time to see what happened
@@ -520,7 +530,6 @@ class PokerGame(tk.Tk): # base class is Tk
             return #ignore button clicks when it is not player turn
         amount = self.raiseslider.get()
         self.lastraise = self.players[0].raisebet(self.players[1], amount)
-        print(self.lastraise)
         self.pot = self.players[0].totalbet + self.players[1].totalbet
         self.after_action()
 
@@ -547,7 +556,6 @@ class PokerGame(tk.Tk): # base class is Tk
         self.update_pots()
         self.update_buttons()
         self.after(500)
-        print("checking actions")
 
         if self.if_agree() and (self.players[0].balance == 0 or self.players[1].balance == 0):
             self.showdown()
@@ -561,14 +569,10 @@ class PokerGame(tk.Tk): # base class is Tk
     def if_agree(self):
         """Returns True if the betting round ends because they agree"""
         #case 1: they have same total bet:
-        print("human="+str(self.players[0].totalbet), self.players[0].did_action)
-        print("bot="+str(self.players[1].totalbet), self.players[1].did_action)
         if not (self.players[0].did_action and self.players[1].did_action):
-            print("doesnt match)")
             return False #if not both did an action in a phase, then didnt agree yet
             
-        if self.players[0].totalbet == self.players[1].totalbet:
-            print("matching bet")
+        if self.players[0].totalbet == self.players[1].totalbet: #matching bet
             return True # no need to worry about beginning of round since blinds means no time will have same total bet unless agree!
         #case 2: they dont have same total bet, but one went all in and other has called higher already
         if self.players[0].balance == 0 and self.players[1].totalbet >= self.players[0].totalbet:
@@ -577,7 +581,6 @@ class PokerGame(tk.Tk): # base class is Tk
         if self.players[1].balance == 0 and self.players[0].totalbet >= self.players[1].totalbet:
             # this means bot went all in and human agreed
             return True
-        print("doesnt match")
         return False #any other cases no
 
 
@@ -590,7 +593,7 @@ class StartMenu(tk.Tk):
         
         # draw the window
         self.canvas = tk.Canvas(self,
-                                     width = 200,
+                                     width = 250,
                                      height = 30)
         self.canvas.pack()
         self.title = "Start Menu" #create window
@@ -598,7 +601,7 @@ class StartMenu(tk.Tk):
         self.label0.pack()
         self.clicked = tk.StringVar() #set the dropdown menu options to be str
         options = ["EASY", "MEDIUM", "HARD"]
-        self.clicked.set("MEDIUM")
+        self.clicked.set("EASY")
         self.menu = tk.OptionMenu(self, self.clicked, *options)
         self.menu.pack()
         self.label = tk.Label(self, text="\nEnter your username:\n(press enter to submit)")
@@ -640,9 +643,9 @@ class EndMenu(tk.Tk):
         self.label0 = tk.Label(self, text="Game over.\nWhat would you like to do?")
         self.label0.pack()
         self.quitbutton = tk.Button(self, text = "QUIT", command = self.on_click_quit)
-        self.quitbutton.pack()
+        self.quitbutton.pack(pady = 10)
         self.replaybutton = tk.Button(self, text = "PLAY AGAIN", command = self.on_click_replay)
-        self.replaybutton.pack()
+        self.replaybutton.pack(pady= 10)
 
         self.protocol("WM_DELETE_WINDOW", self.on_click_quit) #make it so that if user closes the window, same as quitting
 
