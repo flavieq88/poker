@@ -377,7 +377,8 @@ class PokerGame(tk.Tk): # base class is Tk
         self.update_cards()
         self.update_buttons()
 
-        if self.SBplayer == 0 and (not all(self.legal_moves()[1])): #computer is bigblind = acts first postflop and also not in showdown
+        if self.SBplayer == 0 and (any(self.legal_moves()[1])): 
+            #computer is bigblind = acts first postflop and also not in showdown and has a legal move
             self.computer_turn()
 
         self.state = self.INPLAY # now will be player turn to act
@@ -500,6 +501,8 @@ class PokerGame(tk.Tk): # base class is Tk
         self.update_buttons() #update buttons for human -- should be all disappeared
         self.after(500) #wait 0.5 second so we have time to see what happened
         legal = self.legal_moves()[1]
+        if not any(legal): #computer has no legal moves, do nothing
+            return
         x = self.players[1].doAction(self.community, self.players[0], self.pot, legal)
         if x != None: # return a value = did raise
             self.lastraise = x

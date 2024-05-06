@@ -107,18 +107,18 @@ class Bot(Player): #inherit from Player
                 self.fold()
                 return
         else: #h >= threshold
-            if (h < 0.5): #card is not very good so just call and call is available
+            if (h < 0.6): #card is not good enough, call or check
                 if legalmoves[1]:  #call if available: have a higher threshold so it plays tight, more picky
                     self.callbet(legalmoves[1])
                     return
                 if legalmoves[0]: #call is not available (first one to bet, and check is available)
                     self.check()
                     return
-            elif not legalmoves[2] and h>0.5: #if raise unavailable, then call
+            elif not legalmoves[2] and h>0.6: #if raise unavailable, then call
                 self.callbet(legalmoves[1])
                 return
 
-            elif legalmoves[2]: #pocket is quite good so lets raise
+            elif legalmoves[2]: #raise only if card is quite good (>0.6)
                 rangeraise = legalmoves[2][1] - legalmoves[2][0] #max raise - min raise
                 fifth = rangeraise//5 #int
                 if h <0.7: #not as good so raise less
@@ -152,20 +152,20 @@ class Bot(Player): #inherit from Player
                 self.fold()
                 return
         else: #h >= pot odds/threshold
-            if (h < 0.6): #not that great of a hand
+            if (h < 0.5): #not that great of a hand
                 if legalmoves[1]:  #call if available: have a higher threshold so it plays tight, more picky
                     self.callbet(legalmoves[1])
                     return
                 if legalmoves[0]: #call is not available (first one to bet, and check is available)
                     self.check()
                     return
-            elif not legalmoves[2] and h > 0.6: #if raise unavailable, then call
+            elif not legalmoves[2] and h > 0.5: #if raise unavailable, then call
                 self.callbet(legalmoves[1])
                 return
-            elif legalmoves[2]: #pocket is quite good so lets raise
+            elif legalmoves[2]: #raise even if cards are not very good
                 rangeraise = legalmoves[2][1] - legalmoves[2][0] #max raise - min raise
                 eighth = rangeraise//8 #int
-                if h <0.7: #not as good so raise less
+                if h <0.8: #not as good so raise less
                     amount = randint(legalmoves[2][0], legalmoves[2][0]+eighth) #find a random amount between min raise and halfway 
                     return self.raisebet(other, amount)
                 elif h<0.9:
