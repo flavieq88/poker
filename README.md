@@ -21,7 +21,7 @@ It has 3 difficulty levels: easy, medium, hard.
 
 The easy level bot just plays a random move, but if it chooses to fold while check is available, it will check instead.
 <br>
-For the medium and hard level bots, both calculate (a modified version of) pot odds and the handstrength of their own cards. 
+For the medium and hard level bots, both calculate (a modified version of) pot odds and the handstrength of their own cards. The hand strength is calculated using a random sampling method.
 <br>
 The medium bot uses a more passive loose strategy (raise only if cards very good, and in preflop play pocket cards even if they are not very good).
 The hard bot uses a more agressive tight strategy (raise even if cards are not very good, and in preflop play pocket cards only if they are very good).
