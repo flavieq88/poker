@@ -21,5 +21,5 @@ For the medium and hard level bots, both calculate (a modified version of) pot o
 
 The medium bot uses a more passive loose strategy (raise only if cards very good, and in preflop play pocket cards even if they are not very good).
 
-The hard bot uses a more agressive tight strategy (raise even if cards are not very good, and in preflop play pocket cards only if they are very good).
+The hard bot uses a more aggressive tight strategy (raise even if cards are not very good, and in preflop play pocket cards only if they are very good).
 
