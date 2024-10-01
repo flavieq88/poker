@@ -1,3 +1,4 @@
+#!/bin/python3
 #run this file to play
 #this file also includes start and end menus 
 
