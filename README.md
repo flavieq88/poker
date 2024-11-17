@@ -9,7 +9,7 @@ It includes a graphical user interface built with tkinter.
  
 My application follows the standard rules for no limit Heads up Texas hold'em poker (including for blinds, betting and hand rankings). 
 
-To start playing, run the ui.py file.
+To start playing, run the `ui.py` file.
 
 ## Computer bot and playing strategies
 I implemented heuristics (rule based) computer bots to play poker against. 
@@ -23,3 +23,5 @@ The medium bot uses a more passive loose strategy (raise only if cards very good
 
 The hard bot uses a more aggressive tight strategy (raise even if cards are not very good, and in preflop play pocket cards only if they are very good).
 
+#
+You can read more about this project in the `Poker_user_guide.pdf` file.
